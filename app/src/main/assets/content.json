@@ -1,0 +1,59 @@
+{
+  "id": "course_1",
+  "title": "Rohingya Bhasha Learning",
+  "levels": [
+    {
+      "id": "lvl_beginner",
+      "title": "Beginner - Script Foundations",
+      "units": [
+        {
+          "id": "unit_hanifi_1",
+          "title": "Hanifi Alphabet - Group 1",
+          "lessons": [
+            {
+              "id": "lesson_1",
+              "title": "Vowels",
+              "items": [
+                {
+                  "id": "item_vowel_a",
+                  "scriptText": "𐴀",
+                  "transliteration": "A",
+                  "englishMeaning": "Vowel A",
+                  "audioFileRef": "vowel_a.mp3"
+                },
+                {
+                  "id": "item_vowel_i",
+                  "scriptText": "𐴂",
+                  "transliteration": "I",
+                  "englishMeaning": "Vowel I",
+                  "audioFileRef": "vowel_i.mp3"
+                },
+                {
+                  "id": "item_vowel_u",
+                  "scriptText": "𐴃",
+                  "transliteration": "U",
+                  "englishMeaning": "Vowel U",
+                  "audioFileRef": "vowel_u.mp3"
+                },
+                {
+                  "id": "item_vowel_e",
+                  "scriptText": "𐴁",
+                  "transliteration": "E",
+                  "englishMeaning": "Vowel E",
+                  "audioFileRef": "vowel_e.mp3"
+                },
+                {
+                  "id": "item_vowel_o",
+                  "scriptText": "𐴄",
+                  "transliteration": "O",
+                  "englishMeaning": "Vowel O",
+                  "audioFileRef": "vowel_o.mp3"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
