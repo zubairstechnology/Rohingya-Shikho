@@ -2,8 +2,10 @@ package com.zubtech.rohingyashikho.data.repository
 
 import android.content.Context
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.zubtech.rohingyashikho.domain.model.Course
 import com.zubtech.rohingyashikho.domain.model.Lesson
+import com.zubtech.rohingyashikho.domain.model.LessonItem
 import com.zubtech.rohingyashikho.domain.model.Unit
 import com.zubtech.rohingyashikho.domain.repository.ContentRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -40,5 +42,26 @@ class ContentRepositoryImpl @Inject constructor(
             val lesson = course?.levels?.flatMap { it.units }?.flatMap { it.lessons }?.find { it.id == lessonId }
             emit(lesson)
         }
+    }
+
+    override fun getConsonants(): Flow<List<LessonItem>> = flow {
+        val jsonString = context.assets.open("consonants.json").bufferedReader().use { it.readText() }
+        val type = object : TypeToken<List<LessonItem>>() {}.type
+        val items: List<LessonItem> = gson.fromJson(jsonString, type)
+        emit(items)
+    }
+
+    override fun getVowels(): Flow<List<LessonItem>> = flow {
+        val jsonString = context.assets.open("vowels.json").bufferedReader().use { it.readText() }
+        val type = object : TypeToken<List<LessonItem>>() {}.type
+        val items: List<LessonItem> = gson.fromJson(jsonString, type)
+        emit(items)
+    }
+
+    override fun getConsonantsForWriting(): Flow<List<LessonItem>> = flow {
+        val jsonString = context.assets.open("consonants_writing.json").bufferedReader().use { it.readText() }
+        val type = object : TypeToken<List<LessonItem>>() {}.type
+        val items: List<LessonItem> = gson.fromJson(jsonString, type)
+        emit(items)
     }
 }

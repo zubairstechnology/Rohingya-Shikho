@@ -29,7 +29,9 @@ object AppModule {
             context,
             RohingyaDatabase::class.java,
             "rohingya_db"
-        ).build()
+        )
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides

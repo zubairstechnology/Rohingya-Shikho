@@ -38,4 +38,10 @@ class UserPreferences @Inject constructor(
             preferences[KEY_ONBOARDING_COMPLETED] = true
         }
     }
+
+    suspend fun clearUserProfile() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }

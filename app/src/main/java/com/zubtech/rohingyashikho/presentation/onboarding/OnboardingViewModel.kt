@@ -3,6 +3,8 @@ package com.zubtech.rohingyashikho.presentation.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zubtech.rohingyashikho.data.local.UserPreferences
+import com.zubtech.rohingyashikho.data.local.dao.ProgressDao
+import com.zubtech.rohingyashikho.data.local.entity.UserStatsEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val progressDao: ProgressDao
 ) : ViewModel() {
 
     private val _userName = MutableStateFlow("")
@@ -31,8 +34,19 @@ class OnboardingViewModel @Inject constructor(
 
     fun completeOnboarding(onComplete: () -> Unit) {
         viewModelScope.launch {
-            userPreferences.saveUserProfile(_userName.value, _userAge.value)
-            // Here you would also add Firebase Firestore logic if initialized
+            val name = _userName.value
+            val age = _userAge.value
+            userPreferences.saveUserProfile(name, age)
+            
+            // Sync to Room UserStatsEntity
+            progressDao.updateUserStats(
+                UserStatsEntity(
+                    userId = "current_user",
+                    userName = name,
+                    userAge = age
+                )
+            )
+
             onComplete()
         }
     }

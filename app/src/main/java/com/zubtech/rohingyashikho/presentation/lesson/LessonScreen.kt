@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +29,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zubtech.rohingyashikho.presentation.ui.theme.*
+import kotlin.math.absoluteValue
+
+private val KidFriendlyColors = listOf(
+    Color(0xFFFFE5D9), // Peach
+    Color(0xFFFBFAF0), // Cream
+    Color(0xFFFFCAD4), // Pink
+    Color(0xFFB9FBC0), // Mint
+    Color(0xFFCFBAF0), // Lavender
+    Color(0xFFA3C4F3), // Sky Blue
+    Color(0xFF90DBF4), // Cyan
+    Color(0xFFF1C0E8)  // Mauve
+)
+
+private val AccentColors = listOf(
+    Color(0xFFD8572A),
+    Color(0xFFB5A442),
+    Color(0xFFC94C68),
+    Color(0xFF388E3C),
+    Color(0xFF673AB7),
+    Color(0xFF1976D2),
+    Color(0xFF0097A7),
+    Color(0xFF8E24AA)
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,10 +92,10 @@ fun LessonScreen(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Progress bar
+                        // Thicker Progress bar for kids
                         LinearProgressIndicator(
                             progress = 0.5f, // Mock progress
-                            modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
+                            modifier = Modifier.fillMaxWidth().height(12.dp).clip(CircleShape),
                             color = AppPrimary,
                             trackColor = AppPrimary.copy(alpha = 0.1f)
                         )
@@ -82,25 +106,32 @@ fun LessonScreen(
                         AnimatedContent(
                             targetState = item,
                             transitionSpec = {
-                                fadeIn(tween(400)) + scaleIn(initialScale = 0.9f) togetherWith
-                                fadeOut(tween(400)) + scaleOut(targetScale = 1.1f)
+                                (fadeIn(tween(400)) + scaleIn(initialScale = 0.9f)) togetherWith
+                                (fadeOut(tween(400)) + scaleOut(targetScale = 1.1f))
                             },
                             label = "item_transition"
                         ) { targetItem ->
+                            val colorIndex = targetItem.id.hashCode().absoluteValue % KidFriendlyColors.size
+                            val bgColor = KidFriendlyColors[colorIndex]
+                            val accentColor = AccentColors[colorIndex]
+
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Card(
-                                    modifier = Modifier.size(240.dp),
-                                    shape = RoundedCornerShape(32.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FF)),
+                                    modifier = Modifier
+                                        .size(280.dp)
+                                        .shadow(16.dp, RoundedCornerShape(48.dp), clip = false),
+                                    shape = RoundedCornerShape(48.dp),
+                                    colors = CardDefaults.cardColors(containerColor = bgColor),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                                 ) {
                                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                                             Text(
                                                 text = targetItem.scriptText,
-                                                fontSize = 100.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color.Black
+                                                fontSize = 120.sp,
+                                                fontWeight = FontWeight.Black,
+                                                color = accentColor,
+                                                textAlign = TextAlign.Center
                                             )
                                         }
                                     }
@@ -110,32 +141,61 @@ fun LessonScreen(
 
                                 Text(
                                     text = targetItem.transliteration,
-                                    fontSize = 32.sp,
+                                    fontSize = 40.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = AppPrimary
+                                    color = accentColor
                                 )
 
-                                Text(
-                                    text = targetItem.englishMeaning,
-                                    fontSize = 18.sp,
-                                    color = Color.Gray,
-                                    fontWeight = FontWeight.Medium
-                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // Word Row with Icons
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier
+                                        .background(Color(0xFFF8F9FF), RoundedCornerShape(20.dp))
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = Color(0xFFFFD700),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    
+                                    Text(
+                                        text = targetItem.englishMeaning,
+                                        fontSize = 22.sp,
+                                        color = Color.DarkGray,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    
+                                    Icon(
+                                        imageVector = Icons.Default.Mic,
+                                        contentDescription = "Speak",
+                                        tint = accentColor,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(40.dp))
 
                         // Practice Writing Button
                         Button(
                             onClick = { onPracticeWriting(item.id) },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                            shape = RoundedCornerShape(20.dp),
-                            modifier = Modifier.height(56.dp).padding(horizontal = 16.dp)
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = Modifier.height(60.dp).padding(horizontal = 32.dp)
                         ) {
-                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(24.dp))
                             Spacer(Modifier.width(12.dp))
-                            Text("Practice Writing", fontWeight = FontWeight.Bold)
+                            Text("Practice Writing", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         }
 
                         Spacer(modifier = Modifier.weight(1f))
@@ -147,14 +207,18 @@ fun LessonScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Listen Button
-                            FloatingActionButton(
-                                onClick = { viewModel.playAudio() },
-                                containerColor = AppPrimary,
-                                contentColor = Color.White,
-                                shape = CircleShape,
-                                modifier = Modifier.size(80.dp)
-                            ) {
-                                Icon(Icons.Default.VolumeUp, contentDescription = "Play", modifier = Modifier.size(36.dp))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                FloatingActionButton(
+                                    onClick = { viewModel.playAudio() },
+                                    containerColor = Color(0xFFE8F5E9),
+                                    contentColor = Color(0xFF2E7D32),
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(72.dp),
+                                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                                ) {
+                                    Icon(Icons.Default.VolumeUp, contentDescription = "Play", modifier = Modifier.size(32.dp))
+                                }
+                                Text("Listen", modifier = Modifier.padding(top = 8.dp), fontWeight = FontWeight.Bold, color = Color.Gray)
                             }
 
                             // Record Button with Pulse
@@ -166,28 +230,31 @@ fun LessonScreen(
                                 label = "pulse"
                             )
 
-                            Box(contentAlignment = Alignment.Center) {
-                                if (uiState.isRecording) {
-                                    Box(
-                                        modifier = Modifier.size(80.dp).scale(scale).clip(CircleShape).background(MaterialTheme.colorScheme.error.copy(alpha = 0.2f))
-                                    )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    if (uiState.isRecording) {
+                                        Box(
+                                            modifier = Modifier.size(72.dp).scale(scale).clip(CircleShape).background(MaterialTheme.colorScheme.error.copy(alpha = 0.2f))
+                                        )
+                                    }
+                                    FloatingActionButton(
+                                        onClick = {
+                                            if (uiState.isRecording) viewModel.stopRecording()
+                                            else viewModel.startRecording(context.cacheDir)
+                                        },
+                                        containerColor = if (uiState.isRecording) MaterialTheme.colorScheme.error else AppPrimary,
+                                        contentColor = Color.White,
+                                        shape = CircleShape,
+                                        modifier = Modifier.size(80.dp)
+                                    ) {
+                                        Icon(
+                                            if (uiState.isRecording) Icons.Default.Stop else Icons.Default.Mic,
+                                            contentDescription = "Record",
+                                            modifier = Modifier.size(36.dp)
+                                        )
+                                    }
                                 }
-                                FloatingActionButton(
-                                    onClick = {
-                                        if (uiState.isRecording) viewModel.stopRecording()
-                                        else viewModel.startRecording(context.cacheDir)
-                                    },
-                                    containerColor = if (uiState.isRecording) MaterialTheme.colorScheme.error else Color.White,
-                                    contentColor = if (uiState.isRecording) Color.White else Color.Black,
-                                    shape = CircleShape,
-                                    modifier = Modifier.size(80.dp).border(2.dp, if (uiState.isRecording) Color.Transparent else Color.LightGray, CircleShape)
-                                ) {
-                                    Icon(
-                                        if (uiState.isRecording) Icons.Default.Stop else Icons.Default.Mic,
-                                        contentDescription = "Record",
-                                        modifier = Modifier.size(36.dp)
-                                    )
-                                }
+                                Text(if (uiState.isRecording) "Stop" else "Speak", modifier = Modifier.padding(top = 8.dp), fontWeight = FontWeight.Bold, color = Color.Gray)
                             }
                         }
 
@@ -197,7 +264,7 @@ fun LessonScreen(
                             shape = RoundedCornerShape(24.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = AppPrimary)
                         ) {
-                            Text("Continue", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text("Continue", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                         }
                     }
                 }

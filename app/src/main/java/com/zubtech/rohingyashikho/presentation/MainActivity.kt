@@ -8,11 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -31,6 +29,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.zubtech.rohingyashikho.presentation.alphabet.AlphabetCombinationScreen
 import com.zubtech.rohingyashikho.presentation.alphabet.AlphabetReferenceScreen
 import com.zubtech.rohingyashikho.presentation.alphabet.PdfViewerScreen
 import com.zubtech.rohingyashikho.presentation.drawing.DrawingScreen
@@ -81,14 +80,13 @@ fun RohingyaAppNavigation() {
     val mainDestinations = listOf(
         Screen.Home.route,
         Screen.AlphabetReference.route,
-        Screen.Review.route,
         Screen.Progress.route
     )
 
     Scaffold(
         containerColor = Color.Transparent,
         bottomBar = {
-            if (currentDestination?.route in mainDestinations) {
+            if (currentDestination?.route in mainDestinations || currentDestination?.route == Screen.Review.route) {
                 CustomBottomNavigation(
                     currentRoute = currentDestination?.route,
                     onNavigate = { route ->
@@ -177,7 +175,7 @@ fun RohingyaAppNavigation() {
                         navController.navigate(Screen.DrawingPractice.createRoute(itemId))
                     },
                     onOpenPdf = {
-                        navController.navigate(Screen.PdfViewer.route)
+                        navController.navigate(Screen.PdfViewer.createRoute("qaida_book.pdf"))
                     }
                 )
             }
@@ -215,6 +213,14 @@ fun RohingyaAppNavigation() {
                 ProgressScreen(
                     onNavigateBack = {
                         navController.popBackStack()
+                    },
+                    onLogout = {
+                        navController.navigate(Screen.NameInput.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    onSettingsClick = {
+                        navController.navigate(Screen.Settings.route)
                     }
                 )
             }
@@ -235,11 +241,19 @@ fun RohingyaAppNavigation() {
                     }
                 )
             }
-            composable(Screen.PdfViewer.route) {
+            composable(
+                route = Screen.PdfViewer.route,
+                arguments = listOf(navArgument("pdfUrl") { 
+                    type = NavType.StringType
+                    defaultValue = "qaida_book.pdf"
+                })
+            ) { backStackEntry ->
+                val pdfUrl = backStackEntry.arguments?.getString("pdfUrl") ?: "qaida_book.pdf"
                 PdfViewerScreen(
                     onNavigateBack = {
                         navController.popBackStack()
-                    }
+                    },
+                    pdfSource = pdfUrl
                 )
             }
         }
@@ -254,7 +268,7 @@ fun CustomBottomNavigation(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 24.dp),
+            .padding(horizontal = 24.dp, vertical = 24.dp),
         contentAlignment = Alignment.Center
     ) {
         Surface(
@@ -262,7 +276,7 @@ fun CustomBottomNavigation(
                 .fillMaxWidth()
                 .height(72.dp),
             shape = RoundedCornerShape(36.dp),
-            color = AppCardDark,
+            color = Color.White,
             shadowElevation = 12.dp
         ) {
             Row(
@@ -279,14 +293,14 @@ fun CustomBottomNavigation(
                     onClick = { onNavigate(Screen.Home.route) }
                 )
                 BottomNavItem(
-                    icon = Icons.Rounded.MenuBook,
-                    label = "Alphabet",
+                    icon = Icons.AutoMirrored.Rounded.MenuBook,
+                    label = "Studio",
                     isSelected = currentRoute == Screen.AlphabetReference.route,
                     onClick = { onNavigate(Screen.AlphabetReference.route) }
                 )
                 BottomNavItem(
-                    icon = Icons.Rounded.Bookmark,
-                    label = "Review",
+                    icon = Icons.Rounded.EmojiEvents,
+                    label = "Rank",
                     isSelected = currentRoute == Screen.Review.route,
                     onClick = { onNavigate(Screen.Review.route) }
                 )
@@ -312,7 +326,7 @@ fun BottomNavItem(
         modifier = Modifier
             .height(48.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(if (isSelected) AppPrimary else Color.Transparent)
+            .background(if (isSelected) Color(0xFFF1F5F9) else Color.Transparent)
             .clickable { onClick() }
             .padding(horizontal = if (isSelected) 20.dp else 12.dp),
         contentAlignment = Alignment.Center
@@ -324,16 +338,16 @@ fun BottomNavItem(
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
+                tint = if (isSelected) Color(0xFF007AFF) else Color(0xFF94A3B8),
                 modifier = Modifier.size(26.dp)
             )
             if (isSelected) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = label,
-                    color = Color.White,
+                    color = Color(0xFF007AFF),
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Black
                 )
             }
         }

@@ -2,14 +2,17 @@ package com.zubtech.rohingyashikho.presentation.home
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -18,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -48,11 +52,10 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             HomeTopBar(
-                points = uiState.totalPoints,
                 userName = uiState.userName
             )
         },
-        containerColor = AppBackground
+        containerColor = Color.White
     ) { padding ->
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -62,60 +65,81 @@ fun HomeScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                    .padding(padding),
+                contentPadding = PaddingValues(bottom = 120.dp)
             ) {
-                item { Spacer(modifier = Modifier.height(8.dp)) }
-
                 item {
-                    AnimatedVisibility(
-                        visible = isLoaded,
-                        enter = fadeIn(tween(800)) + slideInVertically(tween(800)) { it / 4 }
-                    ) {
-                        ContinueLearningCard(
-                            title = "Pick up Where you left",
-                            lessonName = "Advanced Rohingya",
-                            progress = 0.69f,
-                            onContinue = { /* TODO */ }
+                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        AnimatedVisibility(
+                            visible = isLoaded,
+                            enter = fadeIn(tween(800)) + slideInVertically(tween(800)) { it / 4 }
+                        ) {
+                            ContinueLearningCard(
+                                progress = 0.69f,
+                                onContinue = { /* TODO */ }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        ScriptLearningCard(
+                            progress = 0.34f,
+                            streak = uiState.streak
                         )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        LearningPathSection(onGoalClick = {})
+
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
 
                 item {
-                    AnimatedVisibility(
-                        visible = isLoaded,
-                        enter = fadeIn(tween(1000)) + slideInVertically(tween(1000)) { it / 2 }
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        CategorySection(
-                            onAlphabetClick = onAlphabetClick,
-                            onQuizClick = { onStartQuiz("1") }
-                        )
+                        item {
+                            LevelCard(
+                                level = 1,
+                                title = "Basic",
+                                sections = 6,
+                                items = listOf("Hanifi Scri...", "28 Conson...", "10 Vowels")
+                            )
+                        }
+                        item {
+                            LevelCard(
+                                level = 2,
+                                title = "Vowel Signs",
+                                sections = 8,
+                                items = listOf("Short Vowels", "Long Vowels", "Special Signs"),
+                                bgColor = Color(0xFFFAF5FF)
+                            )
+                        }
                     }
                 }
-                
-                item { Spacer(modifier = Modifier.height(120.dp)) }
             }
         }
     }
 }
 
 @Composable
-fun HomeTopBar(points: Int, userName: String) {
+fun HomeTopBar(userName: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .statusBarsPadding()
             .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Profile Avatar
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(AppPrimary.copy(alpha = 0.1f))
+                    .background(Color(0xFFF1F5F9))
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.graphic1),
@@ -136,7 +160,7 @@ fun HomeTopBar(points: Int, userName: String) {
                     letterSpacing = (-0.5).sp
                 )
                 Text(
-                    text = "Keep learning, $userName!",
+                    text = "Keep learning, $userName",
                     fontSize = 13.sp,
                     color = AppTextSecondary,
                     fontWeight = FontWeight.Medium
@@ -144,342 +168,372 @@ fun HomeTopBar(points: Int, userName: String) {
             }
         }
 
-        Surface(
-            color = AppPrimary.copy(alpha = 0.1f),
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.height(40.dp)
+        IconButton(
+            onClick = { /* Notification */ },
+            modifier = Modifier
+                .size(44.dp)
+                .background(Color(0xFFF1F5F9), CircleShape)
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Rounded.Diamond, 
-                    contentDescription = null, 
-                    tint = DiamondGold, 
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = points.toString(), 
-                    color = AppPrimary, 
-                    fontWeight = FontWeight.ExtraBold, 
-                    fontSize = 15.sp
-                )
-            }
+            Icon(
+                Icons.Rounded.Notifications, 
+                contentDescription = "Notifications", 
+                tint = Color(0xFF1E293B),
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }
 
 @Composable
 fun ContinueLearningCard(
-    title: String,
-    lessonName: String,
     progress: Float,
     onContinue: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scale"
-    )
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(220.dp)
             .clickable { onContinue() },
         shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = AppCardDark),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = title, 
-                        color = Color.White, 
-                        fontSize = 16.sp, 
-                        fontWeight = FontWeight.Bold
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFF00C6FF), Color(0xFF0072FF))
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                )
+            )
+
+            Column(modifier = Modifier.padding(24.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .background(Color.White.copy(alpha = 0.2f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Rounded.Explore, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    }
+                    Spacer(Modifier.width(10.dp))
                     Text(
-                        text = "Continue your journey to mastery", 
-                        color = Color.White.copy(alpha = 0.5f), 
-                        fontSize = 13.sp
+                        "Pick up Where you left", 
+                        color = Color.White.copy(alpha = 0.9f), 
+                        fontSize = 14.sp, 
+                        fontWeight = FontWeight.Bold
                     )
                 }
                 
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    "Rohingya langua...", 
+                    color = Color.White, 
+                    fontSize = 32.sp, 
+                    fontWeight = FontWeight.Black,
+                    lineHeight = 36.sp
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Surface(
+                    color = Color.White.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Rounded.MenuBook, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "28 Lessons", 
+                            color = Color.White, 
+                            fontSize = 13.sp, 
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                }
+            }
+
+            // Circular progress with Icon
+            Box(modifier = Modifier.align(Alignment.TopEnd).padding(24.dp)) {
                 Box(contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(
                         progress = progress,
-                        color = AppPrimary,
-                        strokeWidth = 6.dp,
-                        trackColor = Color.White.copy(alpha = 0.1f),
-                        modifier = Modifier.size(58.dp).scale(scale)
+                        color = Color(0xFFFFD700),
+                        trackColor = Color.White.copy(alpha = 0.2f),
+                        strokeWidth = 7.dp,
+                        modifier = Modifier.size(86.dp)
                     )
-                    Text(
-                        text = "${(progress * 100).toInt()}%", 
-                        color = Color.White, 
-                        fontSize = 13.sp, 
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(28.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Text(
-                    text = lessonName, 
-                    color = Color.White, 
-                    fontSize = 26.sp, 
-                    fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                Column(horizontalAlignment = Alignment.End) {
-                    Surface(
-                        color = Color.White.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "28 Lessons", 
-                                color = Color.White, 
-                                fontWeight = FontWeight.Bold, 
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "${(progress * 100).toInt()}%", 
+                            color = Color.White, 
+                            fontWeight = FontWeight.Black, 
+                            fontSize = 18.sp
+                        )
                         Icon(
-                            Icons.Rounded.Diamond, 
-                            contentDescription = null, 
-                            tint = DiamondGold, 
+                            Icons.Rounded.School, 
+                            null, 
+                            tint = Color.White.copy(alpha = 0.5f), 
                             modifier = Modifier.size(16.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "40/100", 
-                            color = Color.White, 
-                            fontWeight = FontWeight.Bold, 
-                            fontSize = 14.sp
-                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Box(
+            // Illustration
+            Image(
+                painter = painterResource(id = R.drawable.graphic1),
+                contentDescription = null,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(110.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(
-                        Brush.linearGradient(
-                            listOf(Color(0xFFFBC02D), Color(0xFFFFA000))
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                 Text(
-                    text = "ROHINGYA", 
-                    color = Color.White.copy(alpha = 0.95f), 
-                    fontWeight = FontWeight.Black, 
-                    fontSize = 36.sp, 
-                    letterSpacing = 6.sp
-                )
-                 
-                 // Decorative circle
-                 Box(
-                     modifier = Modifier
-                         .align(Alignment.BottomEnd)
-                         .offset(x = 20.dp, y = 20.dp)
-                         .size(80.dp)
-                         .clip(CircleShape)
-                         .background(Color.White.copy(alpha = 0.1f))
-                 )
-            }
+                    .align(Alignment.BottomEnd)
+                    .size(170.dp)
+                    .offset(x = 10.dp, y = 15.dp),
+                contentScale = ContentScale.Fit
+            )
         }
     }
 }
 
-data class HomeCategory(
-    val title: String,
-    val subtitle: String,
-    val icon: ImageVector,
-    val backgroundColor: Color,
-    val onClick: () -> Unit
-)
-
 @Composable
-fun CategorySection(onAlphabetClick: () -> Unit, onQuizClick: () -> Unit) {
-    val categories = listOf(
-        HomeCategory(
-            "Alphabet & Words",
-            "Learn Hanifi script",
-            Icons.Rounded.MenuBook,
-            Color(0xFFE8F5E9),
-            onAlphabetClick
-        ),
-        HomeCategory(
-            "Pronunciation",
-            "Listen and repeat",
-            Icons.Rounded.VolumeUp,
-            Color(0xFFE3F2FD),
-            {}
-        ),
-        HomeCategory(
-            "Daily Chat",
-            "Real-life scenarios",
-            Icons.Rounded.Chat,
-            Color(0xFFFFF3E0),
-            {}
-        ),
-        HomeCategory(
-            "Quizzes",
-            "Test knowledge",
-            Icons.Rounded.Quiz,
-            Color(0xFFF3E5F5),
-            onQuizClick
-        ),
-        HomeCategory(
-            "Writing",
-            "Master your skills",
-            Icons.Rounded.Edit,
-            Color(0xFFE0F2F1),
-            {}
-        ),
-        HomeCategory(
-            "Advanced",
-            "Structured learning",
-            Icons.Rounded.Flag,
-            Color(0xFFFCE4EC),
-            {}
-        )
-    )
-
-    Column {
+fun ScriptLearningCard(progress: Float, streak: Int) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(12.dp, RoundedCornerShape(28.dp), spotColor = Color.Black.copy(alpha = 0.1f)),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Today's Challenge", 
-                fontSize = 22.sp, 
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.Black
-            )
-            TextButton(onClick = { /* TODO */ }) {
-                Text("See All", color = AppPrimary, fontWeight = FontWeight.Bold)
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-
-        categories.chunked(2).forEach { rowItems ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(Color(0xFF007AFF), RoundedCornerShape(18.dp)),
+                contentAlignment = Alignment.Center
             ) {
-                rowItems.forEach { item ->
-                    ChallengeCard(
-                        title = item.title,
-                        subtitle = item.subtitle,
-                        backgroundColor = item.backgroundColor,
-                        icon = item.icon,
-                        modifier = Modifier.weight(1f),
-                        onClick = item.onClick
+                Icon(Icons.Rounded.MenuBook, null, tint = Color.White, modifier = Modifier.size(28.dp))
+            }
+            
+            Spacer(Modifier.width(16.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Rohingya", 
+                    fontWeight = FontWeight.Black, 
+                    fontSize = 18.sp, 
+                    color = Color.Black
+                )
+                Text(
+                    "Hanifi Script Learning", 
+                    color = Color.Gray, 
+                    fontSize = 13.sp, 
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                LinearProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(CircleShape),
+                    color = Color(0xFF6366F1),
+                    trackColor = Color(0xFFF1F5F9)
+                )
+            }
+            
+            Spacer(Modifier.width(16.dp))
+            
+            Column(horizontalAlignment = Alignment.End) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Rounded.LocalFireDepartment, 
+                        null, 
+                        tint = Color(0xFFFF5722), 
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        "$streak Days", 
+                        fontWeight = FontWeight.Black, 
+                        fontSize = 15.sp, 
+                        color = Color.Black
                     )
                 }
-                if (rowItems.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
+                Text(
+                    "${(progress * 100).toInt()}%", 
+                    fontSize = 11.sp, 
+                    color = Color.Gray, 
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
 
 @Composable
-fun ChallengeCard(
-    title: String,
-    subtitle: String,
-    backgroundColor: Color,
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "scale"
-    )
-
-    Card(
-        onClick = onClick,
-        modifier = modifier
-            .height(180.dp)
-            .scale(scale),
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+fun LearningPathSection(onGoalClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .padding(20.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
+                .size(44.dp)
+                .background(Color(0xFF6366F1), CircleShape),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White.copy(alpha = 0.6f)),
-                contentAlignment = Alignment.Center
+            Icon(Icons.Rounded.Explore, null, tint = Color.White, modifier = Modifier.size(22.dp))
+        }
+        
+        Spacer(Modifier.width(16.dp))
+        
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                "Learning Path", 
+                fontWeight = FontWeight.Black, 
+                fontSize = 22.sp, 
+                color = Color.Black
+            )
+            Text(
+                "Foundation to mastery", 
+                color = Color.Gray, 
+                fontSize = 14.sp, 
+                fontWeight = FontWeight.Medium
+            )
+        }
+        
+        Surface(
+            onClick = onGoalClick,
+            color = Color(0xFFF8FAFC),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, Color(0xFFF1F5F9))
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    icon, 
-                    contentDescription = null, 
-                    tint = Color.Black.copy(alpha = 0.8f), 
-                    modifier = Modifier.size(26.dp)
-                )
-            }
-            Column {
+                Icon(Icons.Rounded.EmojiEvents, null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
                 Text(
-                    text = title, 
-                    fontWeight = FontWeight.ExtraBold, 
-                    fontSize = 16.sp, 
-                    color = Color.Black,
-                    lineHeight = 20.sp
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = subtitle, 
+                    "Your Goal", 
                     fontSize = 12.sp, 
-                    color = Color.Gray.copy(alpha = 0.8f), 
-                    lineHeight = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.ExtraBold, 
+                    color = Color.Black
                 )
+                Icon(Icons.Rounded.ChevronRight, null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun LevelCard(
+    level: Int, 
+    title: String, 
+    sections: Int, 
+    items: List<String>,
+    bgColor: Color = Color(0xFFF0F9FF)
+) {
+    Card(
+        modifier = Modifier
+            .width(280.dp)
+            .shadow(4.dp, RoundedCornerShape(32.dp), spotColor = Color.Black.copy(alpha = 0.05f)),
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = bgColor)
+    ) {
+        Row(modifier = Modifier.padding(24.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
+                Surface(
+                    color = Color(0xFF007AFF), 
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(
+                        "LEVEL $level", 
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp), 
+                        color = Color.White, 
+                        fontSize = 10.sp, 
+                        fontWeight = FontWeight.Black
+                    )
+                }
+                
+                Spacer(Modifier.height(10.dp))
+                
+                Text(
+                    title, 
+                    fontWeight = FontWeight.Black, 
+                    fontSize = 24.sp, 
+                    color = Color.Black
+                )
+                
+                Spacer(Modifier.height(6.dp))
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.MenuBook, null, tint = Color(0xFF007AFF), modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        "$sections Sections", 
+                        fontSize = 13.sp, 
+                        fontWeight = FontWeight.Bold, 
+                        color = Color(0xFF007AFF)
+                    )
+                }
+                
+                Spacer(Modifier.height(20.dp))
+                
+                items.forEach { item ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically, 
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    ) {
+                        Icon(
+                            Icons.Rounded.CheckCircle, 
+                            null, 
+                            tint = Color(0xFF007AFF), 
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            item, 
+                            fontSize = 13.sp, 
+                            color = Color(0xFF475569),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+            
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                Image(
+                    painterResource(id = R.drawable.graphic1), 
+                    null, 
+                    modifier = Modifier.size(70.dp),
+                    contentScale = ContentScale.Fit
+                )
+                
+                Spacer(Modifier.height(20.dp))
+                
+                IconButton(
+                    onClick = {}, 
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(Color.White, CircleShape)
+                        .shadow(6.dp, CircleShape)
+                ) {
+                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = Color(0xFF007AFF), modifier = Modifier.size(28.dp))
+                }
             }
         }
     }

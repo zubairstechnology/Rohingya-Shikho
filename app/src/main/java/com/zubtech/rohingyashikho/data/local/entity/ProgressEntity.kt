@@ -6,8 +6,9 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "progress")
 data class ProgressEntity(
     @PrimaryKey val lessonItemId: String,
-    val masteryPercentage: Int,
-    val lastAccessed: Long
+    val masteryPercentage: Int = 0,
+    val clickCount: Int = 0,
+    val lastAccessed: Long = System.currentTimeMillis()
 )
 
 @Entity(tableName = "review_items")
@@ -22,7 +23,17 @@ data class ReviewItemEntity(
 @Entity(tableName = "user_stats")
 data class UserStatsEntity(
     @PrimaryKey val userId: String = "current_user",
-    val currentStreak: Int,
-    val lastLessonDate: Long,
-    val totalPoints: Int
+    val userName: String = "",
+    val userAge: String = "",
+    val currentStreak: Int = 0,
+    val lastLessonDate: Long = 0,
+    val totalPoints: Int = 0,
+    val levelsPassed: Int = 0,
+    val isAlphabetQuizUnlocked: Boolean = false,
+    val consonantProgress: Float = 0f,
+    val vowelProgress: Float = 0f,
+    val recognitionProgress: Float = 0f,
+    val quizProgress: Float = 0f,
+    val vowelRecognitionProgress: Float = 0f,
+    val vowelQuizProgress: Float = 0f
 )

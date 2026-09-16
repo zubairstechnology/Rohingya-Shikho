@@ -19,5 +19,7 @@ sealed class Screen(val route: String) {
     object DrawingPractice : Screen("drawing/{itemId}") {
         fun createRoute(itemId: String) = "drawing/$itemId"
     }
-    object PdfViewer : Screen("pdf_viewer")
+    object PdfViewer : Screen("pdf_viewer?pdfUrl={pdfUrl}") {
+        fun createRoute(pdfUrl: String) = "pdf_viewer?pdfUrl=$pdfUrl"
+    }
 }
