@@ -1,27 +1,26 @@
 package com.zubtech.rohingyashikho.presentation.progress
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -39,6 +38,7 @@ fun ProgressScreen(
     onNavigateBack: () -> Unit,
     onLogout: () -> Unit,
     onSettingsClick: () -> Unit,
+    onStartReview: () -> Unit,
     viewModel: ProgressViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -46,7 +46,7 @@ fun ProgressScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile & Progress", fontWeight = FontWeight.Black, color = Color(0xFF1E293B)) },
+                title = { Text("My Profile", fontWeight = FontWeight.Black, color = Color(0xFF1E293B)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF1E293B))
@@ -97,8 +97,12 @@ fun ProgressScreen(
                 }
 
                 item {
+                    DailyReviewShortcut(onClick = onStartReview)
+                }
+
+                item {
                     Text(
-                        text = "Learning Path Progress",
+                        text = "Learning Journey",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black,
                         color = Color(0xFF1E293B),
@@ -142,49 +146,68 @@ fun ProgressScreen(
 @Composable
 fun AttractiveProfileHeader(userName: String, masteredItems: Int, totalItems: Int) {
     val percentage = if (totalItems > 0) (masteredItems.toFloat() / totalItems.toFloat()) else 0f
+    val infiniteTransition = rememberInfiniteTransition(label = "profile_anim")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(10000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
+    )
     
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(12.dp, RoundedCornerShape(24.dp))
+            .shadow(16.dp, RoundedCornerShape(32.dp), spotColor = Color(0xFF3B82F6).copy(alpha = 0.5f))
             .background(
                 brush = Brush.linearGradient(
-                    colors = listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8))
+                    colors = listOf(Color(0xFF6366F1), Color(0xFF3B82F6), Color(0xFF2563EB))
                 ),
-                shape = RoundedCornerShape(24.dp)
+                shape = RoundedCornerShape(32.dp)
             )
             .padding(24.dp)
     ) {
+        // Background Decorative Circles
+        Box(
+            modifier = Modifier
+                .size(150.dp)
+                .offset(x = 180.dp, y = (-60).dp)
+                .background(Color.White.copy(alpha = 0.1f), CircleShape)
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Box(
-                    modifier = Modifier
-                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                Surface(
+                    color = Color.White.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "PRO LEARNER",
-                        fontSize = 11.sp,
+                        text = "EXPERT LEARNER",
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = userName,
-                    fontSize = 26.sp,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Keep up the excellent work!",
+                    text = "Leveling up your skills!",
                     fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.8f)
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontWeight = FontWeight.Medium
                 )
             }
 
@@ -192,39 +215,92 @@ fun AttractiveProfileHeader(userName: String, masteredItems: Int, totalItems: In
 
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(90.dp)
+                modifier = Modifier.size(100.dp)
             ) {
-                Canvas(modifier = Modifier.size(90.dp)) {
+                Canvas(modifier = Modifier.size(100.dp).rotate(rotation)) {
                     drawArc(
-                        color = Color.White.copy(alpha = 0.2f),
+                        color = Color.White.copy(alpha = 0.15f),
                         startAngle = 0f,
                         sweepAngle = 360f,
                         useCenter = false,
-                        style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+                        style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
                     )
+                }
+                Canvas(modifier = Modifier.size(100.dp)) {
                     drawArc(
                         color = Color.White,
                         startAngle = -90f,
                         sweepAngle = percentage * 360f,
                         useCenter = false,
-                        style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+                        style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "${(percentage * 100).toInt()}%",
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
                     )
                     Text(
-                        text = "Mastery",
-                        fontSize = 10.sp,
+                        text = "XP",
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White.copy(alpha = 0.9f)
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun DailyReviewShortcut(onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(24.dp))
+            .clickable { onClick() },
+        color = Color.White,
+        shape = RoundedCornerShape(24.dp),
+        border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFEEF2FF))
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .background(Color(0xFF6366F1).copy(alpha = 0.1f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = Color(0xFF6366F1),
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Ready for Review?",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E293B)
+                )
+                Text(
+                    text = "Practice what you've learned",
+                    fontSize = 13.sp,
+                    color = Color(0xFF64748B)
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = Color(0xFF6366F1)
+            )
         }
     }
 }
@@ -237,19 +313,19 @@ fun QuickStatsSection(streak: Int, points: Int) {
     ) {
         StatCard(
             modifier = Modifier.weight(1f),
-            title = "Day Streak",
+            title = "Streak",
             value = "$streak Days",
             icon = Icons.Default.LocalFireDepartment,
             iconColor = Color(0xFFF59E0B),
-            bgColor = Color(0xFFFEF3C7)
+            bgColor = Color(0xFFFFF7ED)
         )
         StatCard(
             modifier = Modifier.weight(1f),
-            title = "Total Points",
+            title = "Points",
             value = "$points XP",
-            icon = Icons.Default.Star,
+            icon = Icons.Default.Stars,
             iconColor = Color(0xFF10B981),
-            bgColor = Color(0xFFD1FAE5)
+            bgColor = Color(0xFFECFDF5)
         )
     }
 }
@@ -264,28 +340,26 @@ fun StatCard(
     bgColor: Color
 ) {
     Surface(
-        modifier = modifier.shadow(4.dp, RoundedCornerShape(20.dp)),
+        modifier = modifier.shadow(2.dp, RoundedCornerShape(24.dp)),
         color = Color.White,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9))
     ) {
-        Row(
+        Column(
             modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(48.dp)
                     .background(bgColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(text = title, fontSize = 12.sp, color = Color(0xFF64748B), fontWeight = FontWeight.Medium)
-                Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFF1E293B))
-            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(text = title, fontSize = 12.sp, color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
+            Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color(0xFF1E293B))
         }
     }
 }
@@ -293,13 +367,18 @@ fun StatCard(
 @Composable
 fun ModernLevelProgressCard(levelId: String, progress: Float) {
     val cleanName = levelId.replace("lvl_", "").replaceFirstChar { it.uppercase() }
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(1000, easing = FastOutSlowInEasing),
+        label = "progress"
+    )
     
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(20.dp)),
+            .shadow(4.dp, RoundedCornerShape(24.dp)),
         color = Color.White,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -311,16 +390,16 @@ fun ModernLevelProgressCard(levelId: String, progress: Float) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .background(Color(0xFFEEF2FF), RoundedCornerShape(10.dp)),
+                            .size(40.dp)
+                            .background(Color(0xFFEEF2FF), RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.TrendingUp, contentDescription = null, tint = Color(0xFF6366F1), modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.AutoStories, contentDescription = null, tint = Color(0xFF6366F1), modifier = Modifier.size(20.dp))
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Level $cleanName",
-                        fontSize = 16.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E293B)
                     )
@@ -332,15 +411,15 @@ fun ModernLevelProgressCard(levelId: String, progress: Float) {
                     color = Color(0xFF4F46E5)
                 )
             }
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             LinearProgressIndicator(
-                progress = progress,
+                progress = { animatedProgress },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(10.dp)
+                    .height(12.dp)
                     .clip(CircleShape),
                 color = Color(0xFF6366F1),
-                trackColor = Color(0xFFE2E8F0)
+                trackColor = Color(0xFFF1F5F9)
             )
         }
     }
@@ -351,26 +430,26 @@ fun BeautifulAchievementsSection() {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(20.dp)),
+            .shadow(4.dp, RoundedCornerShape(24.dp)),
         color = Color.White,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                text = "Earned Badges",
-                fontSize = 16.sp,
+                text = "Milestone Badges",
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E293B)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                BeautifulBadge(icon = Icons.Default.EmojiEvents, label = "First Lesson", unlocked = true, activeColor = Color(0xFF3B82F6))
-                BeautifulBadge(icon = Icons.Default.EmojiEvents, label = "7 Day Streak", unlocked = false, activeColor = Color(0xFFF59E0B))
-                BeautifulBadge(icon = Icons.Default.EmojiEvents, label = "Alphabet Master", unlocked = false, activeColor = Color(0xFF10B981))
+                BeautifulBadge(icon = Icons.Default.EmojiEvents, label = "Starter", unlocked = true, activeColor = Color(0xFF3B82F6))
+                BeautifulBadge(icon = Icons.Default.Timer, label = "Consistent", unlocked = false, activeColor = Color(0xFFF59E0B))
+                BeautifulBadge(icon = Icons.Default.WorkspacePremium, label = "Master", unlocked = false, activeColor = Color(0xFF10B981))
             }
         }
     }
@@ -389,27 +468,26 @@ fun BeautifulBadge(
     ) {
         Box(
             modifier = Modifier
-                .size(60.dp)
-                .shadow(if (unlocked) 6.dp else 0.dp, CircleShape)
+                .size(64.dp)
+                .shadow(if (unlocked) 8.dp else 0.dp, CircleShape)
                 .background(if (unlocked) activeColor else Color(0xFFF1F5F9), CircleShape)
-                .border(2.dp, if (unlocked) Color.White else Color.Transparent, CircleShape),
+                .border(2.dp, if (unlocked) Color.White.copy(alpha = 0.5f) else Color.Transparent, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 icon,
                 contentDescription = null,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(30.dp),
                 tint = if (unlocked) Color.White else Color(0xFF94A3B8)
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = label,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = if (unlocked) Color(0xFF334155) else Color(0xFF94A3B8),
-            textAlign = TextAlign.Center,
-            maxLines = 2
+            textAlign = TextAlign.Center
         )
     }
 }

@@ -47,7 +47,7 @@ fun AdvancedIntroScreen(
     Scaffold(
         containerColor = Color(0xFFF0FDF4) // Light green for advanced/mastery look
     ) { padding ->
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(padding)) {
             val screenWidth = maxWidth
             val isWide = screenWidth > 600.dp
             val horizontalPadding = if (isWide) 64.dp else 24.dp
@@ -129,6 +129,61 @@ fun AdvancedIntroScreen(
                     Icon(Icons.Rounded.AutoAwesome, null, modifier = Modifier.size(22.dp))
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun AnimatedSection(
+    visible: Boolean,
+    delay: Int,
+    content: @Composable () -> Unit
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(animationSpec = tween(durationMillis = 600, delayMillis = delay)) +
+                slideInVertically(initialOffsetY = { 40 }, animationSpec = tween(durationMillis = 600, delayMillis = delay))
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun SectionHeader(title: String, subtitle: String) {
+    Column {
+        Text(
+            text = subtitle,
+            color = Color(0xFF16A34A),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 1.5.sp
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = title,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFF1E293B)
+        )
+    }
+}
+
+@Composable
+fun SmallStatCard(value: String, label: String, color: Color, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        color = Color.White,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, Color(0xFFE8F5E9)),
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = value, fontSize = 24.sp, fontWeight = FontWeight.Black, color = color)
+            Spacer(Modifier.height(4.dp))
+            Text(text = label, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF64748B), textAlign = TextAlign.Center)
         }
     }
 }

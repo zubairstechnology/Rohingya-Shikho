@@ -41,6 +41,9 @@ class AlphabetViewModel @Inject constructor(
     val vowels: StateFlow<List<LessonItem>> = contentRepository.getVowels()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val numbers: StateFlow<List<LessonItem>> = contentRepository.getNumbers()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val allProgress: StateFlow<List<ProgressEntity>> = progressDao.getAllProgress()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -85,7 +88,7 @@ class AlphabetViewModel @Inject constructor(
         if (totalConsonants == 0) return
 
         val progressedConsonants = allProgress.value.count { it.clickCount >= 5 && consonants.value.any { c -> c.id == it.lessonItemId } }
-        val newConsonantProgress = progressedConsonants.toFloat() / totalConsonants
+        val newConsonantProgress = progressedConsonants.toFloat() / totalConsonants.toFloat()
 
         progressDao.updateUserStats(
             currentStats.copy(consonantProgress = newConsonantProgress)
@@ -117,11 +120,90 @@ class AlphabetViewModel @Inject constructor(
         if (totalVowels == 0) return
 
         val progressedVowels = allProgress.value.count { it.clickCount >= 5 && vowels.value.any { v -> v.id == it.lessonItemId } }
-        val newVowelProgress = progressedVowels.toFloat() / totalVowels
+        val newVowelProgress = progressedVowels.toFloat() / totalVowels.toFloat()
 
         progressDao.updateUserStats(
             currentStats.copy(vowelProgress = newVowelProgress)
         )
+    }
+
+    fun recordNumberClick(itemId: String) {
+        viewModelScope.launch {
+            val currentProgress = allProgress.value.find { it.lessonItemId == itemId }
+            val newClickCount = (currentProgress?.clickCount ?: 0) + 1
+            val newMastery = (newClickCount * 20).coerceAtMost(100)
+            
+            progressDao.updateProgress(
+                ProgressEntity(
+                    lessonItemId = itemId,
+                    clickCount = newClickCount,
+                    masteryPercentage = newMastery,
+                    lastAccessed = System.currentTimeMillis()
+                )
+            )
+            updateNumberStatsProgress()
+        }
+    }
+
+    private suspend fun updateNumberStatsProgress() {
+        val currentStats = userStats.value
+        val totalNumbers = numbers.value.size
+        if (totalNumbers == 0) return
+
+        val progressedNumbers = allProgress.value.count { it.clickCount >= 5 && numbers.value.any { n -> n.id == it.lessonItemId } }
+        val newNumberProgress = progressedNumbers.toFloat() / totalNumbers.toFloat()
+
+        progressDao.updateUserStats(
+            currentStats.copy(numberProgress = newNumberProgress)
+        )
+    }
+
+    // --- Separate Review Mode Tracking ---
+
+    fun recordReviewClick(itemId: String, category: String) {
+        viewModelScope.launch {
+            val reviewId = "rev_${category}_${itemId}"
+            val currentProgress = allProgress.value.find { it.lessonItemId == reviewId }
+            val newClickCount = (currentProgress?.clickCount ?: 0) + 1
+            val newMastery = (newClickCount * 20).coerceAtMost(100)
+            
+            progressDao.updateProgress(
+                ProgressEntity(
+                    lessonItemId = reviewId,
+                    clickCount = newClickCount,
+                    masteryPercentage = newMastery,
+                    lastAccessed = System.currentTimeMillis()
+                )
+            )
+
+            updateReviewStatsProgress(category)
+        }
+    }
+
+    private suspend fun updateReviewStatsProgress(category: String) {
+        val currentStats = userStats.value
+        val items = when(category) {
+            "consonant" -> consonants.value
+            "vowel" -> vowels.value
+            "number" -> numbers.value
+            else -> emptyList()
+        }
+        if (items.isEmpty()) return
+
+        val totalItems = items.size
+        val progressedItems = allProgress.value.count { p -> 
+            p.lessonItemId.startsWith("rev_${category}_") && p.clickCount >= 5 
+        }
+        val newProgress = progressedItems.toFloat() / totalItems.toFloat()
+
+        val updatedStats = when(category) {
+            "consonant" -> currentStats.copy(recognitionProgress = newProgress)
+            "vowel" -> currentStats.copy(vowelRecognitionProgress = newProgress)
+            "number" -> currentStats.copy(numberRecognitionProgress = newProgress)
+            else -> currentStats
+        }
+        
+        progressDao.updateUserStats(updatedStats)
     }
 
     fun unlockAlphabetQuiz() {
@@ -138,10 +220,25 @@ class AlphabetViewModel @Inject constructor(
         }
     }
 
+    fun updateVowelRecognitionProgress(progress: Float) {
+        viewModelScope.launch {
+            val currentStats = userStats.value
+            progressDao.updateUserStats(currentStats.copy(vowelRecognitionProgress = progress))
+        }
+    }
+
+    fun updateNumberRecognitionProgress(progress: Float) {
+        viewModelScope.launch {
+            val currentStats = userStats.value
+            progressDao.updateUserStats(currentStats.copy(numberRecognitionProgress = progress))
+        }
+    }
+
     fun completeConsonantLevel(score: Int) {
         viewModelScope.launch {
             val currentStats = userStats.value
-            val quizProgress = (score.toFloat() / 28f).coerceAtMost(1f)
+            val totalCons = if (consonants.value.isNotEmpty()) consonants.value.size.toFloat() else 28f
+            val quizProgress = (score.toFloat() / totalCons).coerceAtMost(1f)
             progressDao.updateUserStats(
                 currentStats.copy(
                     quizProgress = quizProgress,
@@ -164,6 +261,23 @@ class AlphabetViewModel @Inject constructor(
                     vowelQuizProgress = quizProgress,
                     levelsPassed = currentStats.levelsPassed.coerceAtLeast(2),
                     totalPoints = currentStats.totalPoints + (score * 15)
+                )
+            )
+        }
+    }
+
+    fun completeNumberLevel(score: Int) {
+        viewModelScope.launch {
+            val currentStats = userStats.value
+            val totalNum = numbers.value.size
+            if (totalNum == 0) return@launch
+            
+            val quizProgress = (score.toFloat() / totalNum.toFloat()).coerceAtMost(1f)
+            progressDao.updateUserStats(
+                currentStats.copy(
+                    numberQuizProgress = quizProgress,
+                    levelsPassed = currentStats.levelsPassed.coerceAtLeast(3),
+                    totalPoints = currentStats.totalPoints + (score * 20)
                 )
             )
         }

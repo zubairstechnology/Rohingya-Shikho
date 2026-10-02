@@ -1,13 +1,13 @@
 [
-  { "id": "v1", "scriptText": "𐴝", "transliteration": "A", "englishMeaning": "A", "audioFileRef": "audio/vowels/a.mp3" },
-  { "id": "v2", "scriptText": "𐴞", "transliteration": "I", "englishMeaning": "I", "audioFileRef": "audio/vowels/i.mp3" },
-  { "id": "v3", "scriptText": "𐴟", "transliteration": "U", "englishMeaning": "U", "audioFileRef": "audio/vowels/u.mp3" },
-  { "id": "v4", "scriptText": "𐴠", "transliteration": "E", "englishMeaning": "E", "audioFileRef": "audio/vowels/e.mp3" },
-  { "id": "v5", "scriptText": "𐴡", "transliteration": "O", "englishMeaning": "O", "audioFileRef": "audio/vowels/o.mp3" },
-  { "id": "v6", "scriptText": "𐴣", "transliteration": "Na-Khonna", "englishMeaning": "Nasalization", "audioFileRef": "audio/vowels/na_khonna.mp3" },
-  { "id": "v7", "scriptText": "◌𐴤", "transliteration": "Harbahay", "englishMeaning": "Tone 1", "audioFileRef": "audio/vowels/harbahay.mp3" },
-  { "id": "v8", "scriptText": "◌𐴥", "transliteration": "Tahala", "englishMeaning": "Tone 2", "audioFileRef": "audio/vowels/tahala.mp3" },
+  { "id": "v1", "scriptText": "𐴝", "transliteration": "Aafor", "englishMeaning": "Aafor", "audioFileRef": "audio/vowels/a.mp3" },
+  { "id": "v2", "scriptText": "𐴞", "transliteration": "Efor", "englishMeaning": "Efor", "audioFileRef": "audio/vowels/i.mp3" },
+  { "id": "v3", "scriptText": "𐴟", "transliteration": "Ufor", "englishMeaning": "Ufor", "audioFileRef": "audio/vowels/u.mp3" },
+  { "id": "v4", "scriptText": "𐴠", "transliteration": "Aefor", "englishMeaning": "Aefor", "audioFileRef": "audio/vowels/e.mp3" },
+  { "id": "v5", "scriptText": "𐴡", "transliteration": "Ofor", "englishMeaning": "Ofor", "audioFileRef": "audio/vowels/o.mp3" },
+  { "id": "v6", "scriptText": "𐴣", "transliteration": "Nahorna", "englishMeaning": "Nasalization", "audioFileRef": "audio/vowels/na_khonna.mp3" },
+  { "id": "v7", "scriptText": "◌𐴤", "transliteration": "Harbai", "englishMeaning": "Tone 1", "audioFileRef": "audio/vowels/harbahay.mp3" },
+  { "id": "v8", "scriptText": "◌𐴥", "transliteration": "Tela", "englishMeaning": "Tone 2", "audioFileRef": "audio/vowels/tahala.mp3" },
   { "id": "v9", "scriptText": "◌𐴦", "transliteration": "Tana", "englishMeaning": "Tone 3", "audioFileRef": "audio/vowels/tana.mp3" },
-  { "id": "v10", "scriptText": "◌𐴧", "transliteration": "Tassi", "englishMeaning": "Gemination mark", "audioFileRef": "audio/vowels/tassi.mp3" }
+  { "id": "v10", "scriptText": "◌𐴧", "transliteration": "Tossi", "englishMeaning": "Gemination mark", "audioFileRef": "audio/vowels/tassi.mp3" }
 
 ]

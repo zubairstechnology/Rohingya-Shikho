@@ -3,6 +3,7 @@ package com.zubtech.rohingyashikho.presentation.quiz
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.zubtech.rohingyashikho.data.audio.AudioPlayer
 import com.zubtech.rohingyashikho.domain.model.LessonItem
 import com.zubtech.rohingyashikho.domain.repository.ContentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,6 +37,7 @@ data class QuizUiState(
 @HiltViewModel
 class QuizViewModel @Inject constructor(
     private val contentRepository: ContentRepository,
+    private val audioPlayer: AudioPlayer,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -97,6 +99,9 @@ class QuizViewModel @Inject constructor(
 
         if (isCorrect) {
             _uiState.update { it.copy(score = it.score + 1) }
+            audioPlayer.playAsset("audio/extra/correct.mp3")
+        } else {
+            audioPlayer.playAsset("audio/extra/incorrect.mp3")
         }
 
         val nextIndex = currentState.currentQuestionIndex + 1
@@ -105,5 +110,10 @@ class QuizViewModel @Inject constructor(
         } else {
             _uiState.update { it.copy(isFinished = true) }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioPlayer.stop()
     }
 }

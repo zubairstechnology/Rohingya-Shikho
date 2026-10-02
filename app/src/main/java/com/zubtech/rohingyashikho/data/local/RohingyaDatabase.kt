@@ -9,7 +9,7 @@ import com.zubtech.rohingyashikho.data.local.entity.UserStatsEntity
 
 @Database(
     entities = [ProgressEntity::class, ReviewItemEntity::class, UserStatsEntity::class],
-    version = 5,
+    version = 8,
     exportSchema = false
 )
 abstract class RohingyaDatabase : RoomDatabase() {

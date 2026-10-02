@@ -12,5 +12,6 @@ interface ContentRepository {
     fun getLesson(lessonId: String): Flow<Lesson?>
     fun getConsonants(): Flow<List<LessonItem>>
     fun getVowels(): Flow<List<LessonItem>>
+    fun getNumbers(): Flow<List<LessonItem>>
     fun getConsonantsForWriting(): Flow<List<LessonItem>>
 }

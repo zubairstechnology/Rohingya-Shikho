@@ -57,7 +57,6 @@ private val AccentColors = listOf(
 @Composable
 fun LessonScreen(
     onNavigateBack: () -> Unit,
-    onPracticeWriting: (String) -> Unit,
     viewModel: LessonViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -92,9 +91,8 @@ fun LessonScreen(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Thicker Progress bar for kids
                         LinearProgressIndicator(
-                            progress = 0.5f, // Mock progress
+                            progress = 0.5f,
                             modifier = Modifier.fillMaxWidth().height(12.dp).clip(CircleShape),
                             color = AppPrimary,
                             trackColor = AppPrimary.copy(alpha = 0.1f)
@@ -102,7 +100,6 @@ fun LessonScreen(
                         
                         Spacer(modifier = Modifier.height(40.dp))
 
-                        // Animated Content for switching items
                         AnimatedContent(
                             targetState = item,
                             transitionSpec = {
@@ -121,8 +118,7 @@ fun LessonScreen(
                                         .size(280.dp)
                                         .shadow(16.dp, RoundedCornerShape(48.dp), clip = false),
                                     shape = RoundedCornerShape(48.dp),
-                                    colors = CardDefaults.cardColors(containerColor = bgColor),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                                    colors = CardDefaults.cardColors(containerColor = bgColor)
                                 ) {
                                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -148,7 +144,6 @@ fun LessonScreen(
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                // Word Row with Icons
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
@@ -184,29 +179,13 @@ fun LessonScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(40.dp))
-
-                        // Practice Writing Button
-                        Button(
-                            onClick = { onPracticeWriting(item.id) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                            shape = RoundedCornerShape(24.dp),
-                            modifier = Modifier.height(60.dp).padding(horizontal = 32.dp)
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(24.dp))
-                            Spacer(Modifier.width(12.dp))
-                            Text("Practice Writing", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        }
-
                         Spacer(modifier = Modifier.weight(1f))
 
-                        // Audio Controls
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Listen Button
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 FloatingActionButton(
                                     onClick = { viewModel.playAudio() },
@@ -221,7 +200,6 @@ fun LessonScreen(
                                 Text("Listen", modifier = Modifier.padding(top = 8.dp), fontWeight = FontWeight.Bold, color = Color.Gray)
                             }
 
-                            // Record Button with Pulse
                             val infiniteTransition = rememberInfiniteTransition(label = "recording")
                             val scale by infiniteTransition.animateFloat(
                                 initialValue = 1f,

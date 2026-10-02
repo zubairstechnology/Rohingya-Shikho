@@ -58,6 +58,13 @@ class ContentRepositoryImpl @Inject constructor(
         emit(items)
     }
 
+    override fun getNumbers(): Flow<List<LessonItem>> = flow {
+        val jsonString = context.assets.open("numbers.json").bufferedReader().use { it.readText() }
+        val type = object : TypeToken<List<LessonItem>>() {}.type
+        val items: List<LessonItem> = gson.fromJson(jsonString, type)
+        emit(items)
+    }
+
     override fun getConsonantsForWriting(): Flow<List<LessonItem>> = flow {
         val jsonString = context.assets.open("consonants_writing.json").bufferedReader().use { it.readText() }
         val type = object : TypeToken<List<LessonItem>>() {}.type

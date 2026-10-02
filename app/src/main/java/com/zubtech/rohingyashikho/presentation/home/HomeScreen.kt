@@ -5,15 +5,17 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,15 +26,17 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zubtech.rohingyashikho.R
-import com.zubtech.rohingyashikho.presentation.ui.theme.*
+import com.zubtech.rohingyashikho.presentation.settings.LanguageStrings
 
 @Composable
 fun HomeScreen(
@@ -43,393 +47,351 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var isLoaded by remember { mutableStateOf(false) }
-
-    LaunchedEffect(uiState.isLoading) {
-        if (!uiState.isLoading) isLoaded = true
-    }
-
+    val lang = uiState.appLanguage
+    
     Scaffold(
-        topBar = {
-            HomeTopBar(
-                userName = uiState.userName
-            )
-        },
-        containerColor = Color.White
+        containerColor = Color(0xFFF8FAFC)
     ) { padding ->
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = AppPrimary)
+                CircularProgressIndicator(color = Color(0xFF6366F1))
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(bottom = 120.dp)
-            ) {
-                item {
-                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                        AnimatedVisibility(
-                            visible = isLoaded,
-                            enter = fadeIn(tween(800)) + slideInVertically(tween(800)) { it / 4 }
-                        ) {
-                            ContinueLearningCard(
-                                progress = 0.69f,
-                                onContinue = { /* TODO */ }
-                            )
-                        }
+            Box(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = padding.calculateTopPadding() + 110.dp,
+                        bottom = 120.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        ContinueLearningCard(
+                            progress = 0.69f,
+                            lang = lang,
+                            onContinue = { /* Continue Action */ }
+                        )
+                    }
 
-                        Spacer(modifier = Modifier.height(24.dp))
-
+                    item {
                         ScriptLearningCard(
                             progress = 0.34f,
-                            streak = uiState.streak
+                            streak = uiState.streak,
+                            lang = lang
                         )
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        LearningPathSection(onGoalClick = {})
-
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
-                }
 
-                item {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        item {
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(
+                                    elevation = 16.dp,
+                                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                                    spotColor = Color(0xFF6366F1).copy(alpha = 0.08f)
+                                )
+                                .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                                .background(Color.White)
+                                .padding(top = 26.dp, bottom = 24.dp, start = 20.dp, end = 20.dp),
+                            verticalArrangement = Arrangement.spacedBy(18.dp)
+                        ) {
+                            LearningPathHeader(lang = lang, onGoalClick = {})
+                            
+                            Spacer(modifier = Modifier.height(2.dp))
+
                             LevelCard(
                                 level = 1,
-                                title = "Basic",
-                                sections = 6,
-                                items = listOf("Hanifi Scri...", "28 Conson...", "10 Vowels")
+                                title = LanguageStrings.getText("beginner", lang),
+                                sections = 5,
+                                items = listOf(
+                                    LanguageStrings.getText("script_intro", lang),
+                                    LanguageStrings.getText("consonants", lang),
+                                    LanguageStrings.getText("vowels", lang),
+                                    LanguageStrings.getText("combining", lang),
+                                    LanguageStrings.getText("numbers", lang)
+                                ),
+                                imageRes = R.drawable.beginner,
+                                accentColor = Color(0xFF0072FF),
+                                lang = lang,
+                                onClick = { onLessonSelected("1") }
                             )
-                        }
-                        item {
+
                             LevelCard(
                                 level = 2,
-                                title = "Vowel Signs",
-                                sections = 8,
-                                items = listOf("Short Vowels", "Long Vowels", "Special Signs"),
-                                bgColor = Color(0xFFFAF5FF)
+                                title = LanguageStrings.getText("intermediate", lang),
+                                sections = 3,
+                                items = listOf("Writing Practice", "Basic Grammer", "Word Building"),
+                                imageRes = R.drawable.intermediate,
+                                accentColor = Color(0xFFA855F7),
+                                lang = lang,
+                                onClick = { onLessonSelected("2") }
+                            )
+
+                            LevelCard(
+                                level = 3,
+                                title = LanguageStrings.getText("advanced", lang),
+                                sections = 3,
+                                items = listOf("Advance Grammer", "Vocabulary", "Conversation"),
+                                imageRes = R.drawable.advanced,
+                                accentColor = Color(0xFF10B981),
+                                lang = lang,
+                                onClick = { onLessonSelected("3") }
                             )
                         }
                     }
                 }
+
+                HomeTopBar(
+                    userName = uiState.userName.ifBlank { "User" },
+                    lang = lang,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
             }
         }
     }
 }
 
 @Composable
-fun HomeTopBar(userName: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFF1F5F9))
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.graphic1),
-                    contentDescription = "Profile",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            
-            Spacer(modifier = Modifier.width(12.dp))
+fun HomeTopBar(
+    userName: String,
+    lang: String,
+    modifier: Modifier = Modifier
+) {
+    val shiningHeaderBorder = Brush.linearGradient(
+        colors = listOf(
+            Color(0xFF6366F1),
+            Color(0xFFEC4899),
+            Color(0xFFF59E0B),
+            Color(0xFF10B981),
+            Color(0xFF6366F1)
+        )
+    )
 
+    val titleGradient = Brush.linearGradient(
+        colors = listOf(
+            Color(0xFF6366F1),
+            Color(0xFFA855F7),
+            Color(0xFFEC4899)
+        )
+    )
+
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 15.dp,
+                shape = RoundedCornerShape(bottomStart = 38.dp, bottomEnd = 38.dp),
+                spotColor = Color(0xFF6366F1).copy(alpha = 0.25f)
+            )
+            .border(
+                width = 2.5.dp,
+                brush = shiningHeaderBorder,
+                shape = RoundedCornerShape(bottomStart = 38.dp, bottomEnd = 38.dp)
+            ),
+        color = Color.White,
+        shape = RoundedCornerShape(bottomStart = 38.dp, bottomEnd = 38.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 22.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column {
                 Text(
                     text = "Rohingya Shikho",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.Black,
-                    letterSpacing = (-0.5).sp
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        brush = titleGradient,
+                        letterSpacing = (-0.5).sp
+                    )
                 )
                 Text(
-                    text = "Keep learning, $userName",
-                    fontSize = 13.sp,
-                    color = AppTextSecondary,
-                    fontWeight = FontWeight.Medium
+                    text = "${LanguageStrings.getText("welcome_back", lang).replace("!", "").trim()}! $userName",
+                    fontSize = 12.sp,
+                    color = Color(0xFF64748B),
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
-        }
 
-        IconButton(
-            onClick = { /* Notification */ },
-            modifier = Modifier
-                .size(44.dp)
-                .background(Color(0xFFF1F5F9), CircleShape)
-        ) {
-            Icon(
-                Icons.Rounded.Notifications, 
-                contentDescription = "Notifications", 
-                tint = Color(0xFF1E293B),
-                modifier = Modifier.size(24.dp)
-            )
+            Surface(
+                modifier = Modifier.size(44.dp),
+                shape = CircleShape,
+                color = Color(0xFFF1F5F9)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Rounded.NotificationsNone,
+                        contentDescription = null,
+                        tint = Color(0xFF1E293B),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun ContinueLearningCard(
-    progress: Float,
-    onContinue: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp)
-            .clickable { onContinue() },
-        shape = RoundedCornerShape(32.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFF00C6FF), Color(0xFF0072FF))
-                    )
-                )
-            )
+fun ContinueLearningCard(progress: Float, lang: String, onContinue: () -> Unit) {
+    val infiniteTransition = rememberInfiniteTransition(label = "graphic_animation")
+    val floatTranslation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "floatTranslation"
+    )
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
 
-            Column(modifier = Modifier.padding(24.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .background(Color.White.copy(alpha = 0.2f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Rounded.Explore, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    }
-                    Spacer(Modifier.width(10.dp))
-                    Text(
-                        "Pick up Where you left", 
-                        color = Color.White.copy(alpha = 0.9f), 
-                        fontSize = 14.sp, 
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    "Rohingya langua...", 
-                    color = Color.White, 
-                    fontSize = 32.sp, 
-                    fontWeight = FontWeight.Black,
-                    lineHeight = 36.sp
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Surface(
-                    color = Color.White.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Rounded.MenuBook, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "28 Lessons", 
-                            color = Color.White, 
-                            fontSize = 13.sp, 
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-                }
-            }
-
-            // Circular progress with Icon
-            Box(modifier = Modifier.align(Alignment.TopEnd).padding(24.dp)) {
-                Box(contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp)) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(190.dp)
+                .shadow(25.dp, RoundedCornerShape(32.dp), spotColor = Color(0xFF0072FF).copy(alpha = 0.3f))
+                .clickable { onContinue() },
+            shape = RoundedCornerShape(32.dp)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(0xFF00C6FF), Color(0xFF0072FF)))))
+                Box(modifier = Modifier.align(Alignment.TopEnd).padding(top = 20.dp, end = 24.dp)) {
                     CircularProgressIndicator(
-                        progress = progress,
+                        progress = { progress },
                         color = Color(0xFFFFD700),
                         trackColor = Color.White.copy(alpha = 0.2f),
                         strokeWidth = 7.dp,
-                        modifier = Modifier.size(86.dp)
+                        modifier = Modifier.size(64.dp),
+                        strokeCap = StrokeCap.Round
                     )
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            "${(progress * 100).toInt()}%", 
-                            color = Color.White, 
-                            fontWeight = FontWeight.Black, 
-                            fontSize = 18.sp
-                        )
-                        Icon(
-                            Icons.Rounded.School, 
-                            null, 
-                            tint = Color.White.copy(alpha = 0.5f), 
-                            modifier = Modifier.size(16.dp)
-                        )
+                    Text(
+                        text = "${(progress * 100).toInt()}%",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 12.sp
+                    )
+                }
+                Image(
+                    painter = painterResource(id = R.drawable.graphic1),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 80.dp, bottom = 12.dp)
+                        .size(110.dp)
+                        .graphicsLayer {
+                            translationY = floatTranslation
+                            scaleX = pulseScale
+                            scaleY = pulseScale
+                        },
+                    contentScale = ContentScale.Fit
+                )
+                Column(modifier = Modifier.padding(24.dp).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(color = Color.White.copy(alpha = 0.2f), shape = CircleShape) {
+                            Icon(Icons.Rounded.Explore, null, tint = Color.White, modifier = Modifier.padding(6.dp).size(14.dp))
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(LanguageStrings.getText("continue_learning", lang), color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Text(
+                        text = LanguageStrings.getText("rohingya_language", lang).replace(" ", "\n"), 
+                        color = Color.White, 
+                        fontSize = 28.sp, 
+                        fontWeight = FontWeight.Black, 
+                        modifier = Modifier.width(220.dp),
+                        lineHeight = 34.sp
+                    )
+                    Surface(color = Color.White.copy(alpha = 0.25f), shape = RoundedCornerShape(12.dp)) {
+                        Row(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.AutoMirrored.Rounded.MenuBook, null, tint = Color(0xFFFFFFFF), modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(LanguageStrings.getText("lessons_count", lang), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+                        }
                     }
                 }
             }
-
-            // Illustration
-            Image(
-                painter = painterResource(id = R.drawable.graphic1),
-                contentDescription = null,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(170.dp)
-                    .offset(x = 10.dp, y = 15.dp),
-                contentScale = ContentScale.Fit
-            )
         }
     }
 }
 
 @Composable
-fun ScriptLearningCard(progress: Float, streak: Int) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(12.dp, RoundedCornerShape(28.dp), spotColor = Color.Black.copy(alpha = 0.1f)),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+fun ScriptLearningCard(progress: Float, streak: Int, lang: String) {
+    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp)) {
+        Card(
+            modifier = Modifier.fillMaxWidth().shadow(15.dp, RoundedCornerShape(28.dp), spotColor = Color.Black.copy(alpha = 0.03f)),
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(Color(0xFF007AFF), RoundedCornerShape(18.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Rounded.MenuBook, null, tint = Color.White, modifier = Modifier.size(28.dp))
-            }
-            
-            Spacer(Modifier.width(16.dp))
-            
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    "Rohingya", 
-                    fontWeight = FontWeight.Black, 
-                    fontSize = 18.sp, 
-                    color = Color.Black
-                )
-                Text(
-                    "Hanifi Script Learning", 
-                    color = Color.Gray, 
-                    fontSize = 13.sp, 
-                    fontWeight = FontWeight.Medium
-                )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                LinearProgressIndicator(
-                    progress = progress,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(CircleShape),
-                    color = Color(0xFF6366F1),
-                    trackColor = Color(0xFFF1F5F9)
-                )
-            }
-            
-            Spacer(Modifier.width(16.dp))
-            
-            Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Rounded.LocalFireDepartment, 
-                        null, 
-                        tint = Color(0xFFFF5722), 
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        "$streak Days", 
-                        fontWeight = FontWeight.Black, 
-                        fontSize = 15.sp, 
-                        color = Color.Black
-                    )
+            Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Surface(color = Color(0xFF007AFF).copy(alpha = 0.1f), shape = RoundedCornerShape(16.dp), modifier = Modifier.size(52.dp)) {
+                    Icon(Icons.AutoMirrored.Rounded.MenuBook, null, tint = Color(0xFF007AFF), modifier = Modifier.padding(14.dp))
                 }
-                Text(
-                    "${(progress * 100).toInt()}%", 
-                    fontSize = 11.sp, 
-                    color = Color.Gray, 
-                    fontWeight = FontWeight.Bold
-                )
+                Spacer(Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text(LanguageStrings.getText("hanifi_script", lang), fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color(0xFF1E293B))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.LocalFireDepartment, null, tint = Color(0xFFFF5722), modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("$streak ${LanguageStrings.getText("days", lang)}", fontWeight = FontWeight.Black, fontSize = 14.sp, color = Color(0xFF1E293B))
+                        }
+                    }
+                    Text(LanguageStrings.getText("overall_progress", lang), color = Color(0xFF64748B), fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.weight(1f).height(8.dp).clip(CircleShape),
+                            color = Color(0xFF6366F1),
+                            trackColor = Color(0xFFF1F5F9),
+                            strokeCap = StrokeCap.Round
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Text("${(progress * 100).toInt()}%", color = Color(0xFF1E293B), fontWeight = FontWeight.Black, fontSize = 13.sp)
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun LearningPathSection(onGoalClick: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .background(Color(0xFF6366F1), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Rounded.Explore, null, tint = Color.White, modifier = Modifier.size(22.dp))
+fun LearningPathHeader(lang: String, onGoalClick: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Surface(color = Color(0xFF6366F1).copy(alpha = 0.1f), shape = CircleShape, modifier = Modifier.size(40.dp)) {
+            Icon(Icons.Rounded.Explore, null, tint = Color(0xFF6366F1), modifier = Modifier.padding(10.dp))
         }
-        
-        Spacer(Modifier.width(16.dp))
-        
+        Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                "Learning Path", 
-                fontWeight = FontWeight.Black, 
-                fontSize = 22.sp, 
-                color = Color.Black
-            )
-            Text(
-                "Foundation to mastery", 
-                color = Color.Gray, 
-                fontSize = 14.sp, 
-                fontWeight = FontWeight.Medium
-            )
+            Text(LanguageStrings.getText("learning_path", lang), fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color(0xFF1E293B))
+            Text(LanguageStrings.getText("foundation_mastery", lang), color = Color(0xFF64748B), fontSize = 13.sp, fontWeight = FontWeight.Medium)
         }
-        
         Surface(
             onClick = onGoalClick,
-            color = Color(0xFFF8FAFC),
-            shape = RoundedCornerShape(20.dp),
+            color = Color.White,
+            shape = RoundedCornerShape(18.dp),
+            shadowElevation = 4.dp,
             border = BorderStroke(1.dp, Color(0xFFF1F5F9))
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Rounded.EmojiEvents, null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp))
+            Row(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.EmojiEvents, null, tint = Color(0xFF00ACC1), modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text(
-                    "Your Goal", 
-                    fontSize = 12.sp, 
-                    fontWeight = FontWeight.ExtraBold, 
-                    color = Color.Black
-                )
-                Icon(Icons.Rounded.ChevronRight, null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+                Text(LanguageStrings.getText("goal", lang), fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1E293B))
             }
         }
     }
@@ -437,102 +399,84 @@ fun LearningPathSection(onGoalClick: () -> Unit) {
 
 @Composable
 fun LevelCard(
-    level: Int, 
-    title: String, 
-    sections: Int, 
+    level: Int,
+    title: String,
+    sections: Int,
     items: List<String>,
-    bgColor: Color = Color(0xFFF0F9FF)
+    imageRes: Int,
+    accentColor: Color,
+    lang: String,
+    onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val animateScale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, label = "scale")
+    val arrowShadowElevation by animateDpAsState(targetValue = if (isPressed) 4.dp else 12.dp, label = "arrowShadow")
+
     Card(
         modifier = Modifier
-            .width(280.dp)
-            .shadow(4.dp, RoundedCornerShape(32.dp), spotColor = Color.Black.copy(alpha = 0.05f)),
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = bgColor)
+            .fillMaxWidth()
+            .scale(animateScale)
+            .shadow(10.dp, RoundedCornerShape(24.dp), spotColor = accentColor.copy(alpha = 0.15f))
+            .border(2.5.dp, accentColor.copy(alpha = 0.8f), RoundedCornerShape(24.dp))
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Row(modifier = Modifier.padding(24.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                Surface(
-                    color = Color(0xFF007AFF), 
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text(
-                        "LEVEL $level", 
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp), 
-                        color = Color.White, 
-                        fontSize = 10.sp, 
-                        fontWeight = FontWeight.Black
-                    )
-                }
-                
-                Spacer(Modifier.height(10.dp))
-                
-                Text(
-                    title, 
-                    fontWeight = FontWeight.Black, 
-                    fontSize = 24.sp, 
-                    color = Color.Black
-                )
-                
-                Spacer(Modifier.height(6.dp))
-                
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Rounded.MenuBook, null, tint = Color(0xFF007AFF), modifier = Modifier.size(14.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        "$sections Sections", 
-                        fontSize = 13.sp, 
-                        fontWeight = FontWeight.Bold, 
-                        color = Color(0xFF007AFF)
-                    )
-                }
-                
-                Spacer(Modifier.height(20.dp))
-                
-                items.forEach { item ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically, 
-                        modifier = Modifier.padding(bottom = 6.dp)
-                    ) {
-                        Icon(
-                            Icons.Rounded.CheckCircle, 
-                            null, 
-                            tint = Color(0xFF007AFF), 
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            item, 
-                            fontSize = 13.sp, 
-                            color = Color(0xFF475569),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-            
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxHeight()
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Beauty: Increased Big size icon surface with soft background
+            Surface(
+                color = accentColor.copy(alpha = 0.05f),
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.size(120.dp),
+                border = BorderStroke(1.5.dp, accentColor.copy(alpha = 0.12f))
             ) {
                 Image(
-                    painterResource(id = R.drawable.graphic1), 
-                    null, 
-                    modifier = Modifier.size(70.dp),
+                    painter = painterResource(id = imageRes),
+                    contentDescription = null,
+                    modifier = Modifier.padding(10.dp),
                     contentScale = ContentScale.Fit
                 )
-                
-                Spacer(Modifier.height(20.dp))
-                
-                IconButton(
-                    onClick = {}, 
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(Color.White, CircleShape)
-                        .shadow(6.dp, CircleShape)
-                ) {
-                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = Color(0xFF007AFF), modifier = Modifier.size(28.dp))
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1.1f)) {
+                Surface(color = accentColor, shape = RoundedCornerShape(6.dp)) {
+                    Text(
+                        text = "${LanguageStrings.getText("level", lang)} $level",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = title, fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color(0xFF1E293B))
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "$sections ${LanguageStrings.getText("sections", lang)}",
+                    fontSize = 13.sp,
+                    color = Color(0xFF64748B),
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            
+            Surface(
+                modifier = Modifier.size(44.dp),
+                shape = CircleShape,
+                color = Color(0xFFF8FAFC),
+                border = BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                shadowElevation = arrowShadowElevation
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }

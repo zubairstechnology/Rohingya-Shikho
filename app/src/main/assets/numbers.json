@@ -1,0 +1,72 @@
+[
+  {
+    "id": "num_0",
+    "scriptText": "𐴰",
+    "transliteration": "Sifir",
+    "englishMeaning": "0",
+    "audioFileRef": "num_0.mp3"
+  },
+  {
+    "id": "num_1",
+    "scriptText": "𐴱",
+    "transliteration": "Ek",
+    "englishMeaning": "1",
+    "audioFileRef": "num_1.mp3"
+  },
+  {
+    "id": "num_2",
+    "scriptText": "𐴲",
+    "transliteration": "Dui",
+    "englishMeaning": "2",
+    "audioFileRef": "num_2.mp3"
+  },
+  {
+    "id": "num_3",
+    "scriptText": "𐴳",
+    "transliteration": "Tin",
+    "englishMeaning": "3",
+    "audioFileRef": "num_3.mp3"
+  },
+  {
+    "id": "num_4",
+    "scriptText": "𐴴",
+    "transliteration": "Cair",
+    "englishMeaning": "4",
+    "audioFileRef": "num_4.mp3"
+  },
+  {
+    "id": "num_5",
+    "scriptText": "𐴵",
+    "transliteration": "Faic",
+    "englishMeaning": "5",
+    "audioFileRef": "num_5.mp3"
+  },
+  {
+    "id": "num_6",
+    "scriptText": "𐴶",
+    "transliteration": "Cho",
+    "englishMeaning": "6",
+    "audioFileRef": "num_6.mp3"
+  },
+  {
+    "id": "num_7",
+    "scriptText": "𐴷",
+    "transliteration": "Sat",
+    "englishMeaning": "7",
+    "audioFileRef": "num_7.mp3"
+  },
+  {
+    "id": "num_8",
+    "scriptText": "𐴸",
+    "transliteration": "Ayt",
+    "englishMeaning": "8",
+    "audioFileRef": "num_8.mp3"
+  },
+  {
+    "id": "num_9",
+    "scriptText": "𐴹",
+    "transliteration": "No",
+    "englishMeaning": "9",
+    "audioFileRef": "num_9.mp3"
+  }
+]

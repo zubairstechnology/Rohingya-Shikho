@@ -20,12 +20,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -33,12 +33,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -53,6 +55,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -75,7 +78,7 @@ fun PdfViewerScreen(
     var isSearchActive by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
 
-    // Global Zoom State - Reset on page change for "targeted page zoom"
+    // Global Zoom State
     var globalScale by remember { mutableFloatStateOf(1f) }
 
     LaunchedEffect(pdfSource, retryTrigger) {
@@ -86,17 +89,28 @@ fun PdfViewerScreen(
         
         try {
             val file = withContext(Dispatchers.IO) {
-                val fileName = "qaida_book_v27_" + pdfSource.hashCode() + ".pdf"
+                // Extract Google Drive ID and create direct download link
+                val directUrl = if (pdfSource.contains("drive.google.com")) {
+                    val id = when {
+                        pdfSource.contains("id=") -> pdfSource.substringAfter("id=").substringBefore("&")
+                        pdfSource.contains("/file/d/") -> pdfSource.substringAfter("/file/d/").substringBefore("/")
+                        pdfSource.contains("/d/") -> pdfSource.substringAfter("/d/").substringBefore("/")
+                        else -> ""
+                    }
+                    if (id.isNotEmpty()) "https://drive.google.com/uc?export=download&id=$id" else pdfSource
+                } else pdfSource
+
+                val fileName = "book_v32_" + directUrl.hashCode() + ".pdf"
                 val f = File(context.cacheDir, fileName)
                 
                 if (!f.exists() || f.length() < 1024 || !isPdfHeaderCorrect(f)) {
                     f.delete()
-                    if (pdfSource.startsWith("http")) {
-                        downloadDirectPdfFile(pdfSource, f) { progress ->
+                    if (directUrl.startsWith("http")) {
+                        downloadDirectPdfFile(directUrl, f) { progress ->
                             downloadProgress = progress
                         }
                     } else {
-                        context.assets.open(pdfSource).use { input ->
+                        context.assets.open(directUrl).use { input ->
                             FileOutputStream(f).use { output -> input.copyTo(output) }
                         }
                     }
@@ -104,7 +118,7 @@ fun PdfViewerScreen(
                 
                 if (!isPdfHeaderCorrect(f)) {
                     f.delete()
-                    throw Exception("Document integrity failed. Please try again.")
+                    throw Exception("Integrity check failed. Please check internet and try again.")
                 }
                 f
             }
@@ -118,7 +132,7 @@ fun PdfViewerScreen(
             }
             pdfFile = file
         } catch (e: Exception) {
-            error = e.localizedMessage ?: "Failed to connect to document server"
+            error = e.localizedMessage ?: "Failed to open document"
         } finally {
             isLoading = false
         }
@@ -126,53 +140,57 @@ fun PdfViewerScreen(
 
     val pagerState = rememberPagerState(pageCount = { pageCount })
 
-    // Reset zoom when swiping to a new page
     LaunchedEffect(pagerState.currentPage) {
         globalScale = 1f
     }
 
+    // Force RTL for Hanifi Book Style
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Scaffold(
             topBar = {
                 Surface(
                     modifier = Modifier.fillMaxWidth().statusBarsPadding(),
                     color = Color.White,
-                    shadowElevation = 10.dp
+                    shadowElevation = 8.dp
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(72.dp)
+                            .height(68.dp)
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Back Button - Fixed on Left
+                        // 1. Back Arrow on the Right
                         IconButton(
                             onClick = onNavigateBack,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .background(Color(0xFFF1F5F9), CircleShape)
+                            modifier = Modifier.size(42.dp).background(Color(0xFFF1F5F9), CircleShape)
                         ) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color(0xFF1E293B))
                         }
 
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
 
-                        // Dynamic Center Content (Search or Title)
+                        // 2. Search Icon next to Back Arrow on the Right
+                        if (!isSearchActive) {
+                            IconButton(
+                                onClick = { isSearchActive = true },
+                                modifier = Modifier.size(42.dp).background(Color(0xFF6366F1).copy(0.1f), CircleShape)
+                            ) {
+                                Icon(Icons.Default.Search, "Search", tint = Color(0xFF6366F1))
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
+
+                        // 3. Center/Left Area
                         Box(modifier = Modifier.weight(1f)) {
-                            AnimatedContent(
-                                targetState = isSearchActive,
-                                transitionSpec = {
-                                    (fadeIn(animationSpec = tween(400)) + expandHorizontally())
-                                        .togetherWith(fadeOut(animationSpec = tween(400)) + shrinkHorizontally())
-                                }, label = "top_bar_anim"
-                            ) { searching ->
-                                if (searching) {
+                            if (isSearchActive) {
+                                // Search Input with Left-to-Right layout for digits/hint
+                                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                                     TextField(
                                         value = searchQuery,
-                                        onValueChange = { if (it.all { c -> c.isDigit() } && it.length < 4) searchQuery = it },
-                                        modifier = Modifier.fillMaxWidth().height(52.dp).shadow(2.dp, RoundedCornerShape(26.dp)),
-                                        placeholder = { Text("Jump to page...", fontSize = 14.sp) },
+                                        onValueChange = { if (it.all { c -> c.isDigit() }) searchQuery = it },
+                                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                                        placeholder = { Text("Go to page...", fontSize = 14.sp) },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Go),
                                         keyboardActions = KeyboardActions(onGo = {
                                             val pageNum = searchQuery.toIntOrNull()
@@ -189,37 +207,23 @@ fun PdfViewerScreen(
                                             focusedIndicatorColor = Color(0xFF6366F1),
                                             unfocusedIndicatorColor = Color.Transparent
                                         ),
-                                        shape = RoundedCornerShape(26.dp),
+                                        shape = RoundedCornerShape(25.dp),
                                         singleLine = true,
                                         trailingIcon = {
-                                            IconButton(onClick = { isSearchActive = false; searchQuery = "" }) {
-                                                Icon(Icons.Default.Close, null, tint = Color(0xFF94A3B8))
+                                            IconButton(onClick = { isSearchActive = false }) { 
+                                                Icon(Icons.Default.Close, null, tint = Color(0xFF94A3B8)) 
                                             }
-                                        },
-                                        leadingIcon = { Icon(Icons.Default.Search, null, tint = Color(0xFF6366F1)) }
-                                    )
-                                } else {
-                                    Column {
-                                        Text("Rohingya Shikho", fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color(0xFF1E293B))
-                                        if (pageCount > 0) {
-                                            Text("Page ${pagerState.currentPage + 1} of $pageCount", fontSize = 12.sp, color = Color(0xFF6366F1), fontWeight = FontWeight.Bold)
                                         }
+                                    )
+                                }
+                            } else {
+                                // Standard Title Info (Aligned Right in RTL)
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text("Rohingya Shikho", fontWeight = FontWeight.Black, fontSize = 19.sp, color = Color(0xFF1E293B))
+                                    if (pageCount > 0) {
+                                        Text("Page ${pagerState.currentPage + 1} of $pageCount", fontSize = 12.sp, color = Color(0xFF6366F1), fontWeight = FontWeight.Bold)
                                     }
                                 }
-                            }
-                        }
-
-                        // Search Button - Fixed on Right
-                        if (!isSearchActive) {
-                            Spacer(modifier = Modifier.width(12.dp))
-                            IconButton(
-                                onClick = { isSearchActive = true },
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .background(Color(0xFF6366F1), CircleShape)
-                                    .shadow(4.dp, CircleShape)
-                            ) {
-                                Icon(Icons.Default.Search, "Search", tint = Color.White)
                             }
                         }
                     }
@@ -227,7 +231,7 @@ fun PdfViewerScreen(
             },
             bottomBar = {
                 if (pdfFile != null) {
-                    PdfActionBottomBar(
+                    PdfReaderControls(
                         currentPage = pagerState.currentPage,
                         pageCount = pageCount,
                         currentScale = globalScale,
@@ -236,28 +240,66 @@ fun PdfViewerScreen(
                     )
                 }
             },
-            containerColor = Color(0xFFF8FAFC)
+            containerColor = Color(0xFFF1F5F9)
         ) { padding ->
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 if (isLoading) {
-                    DynamicLoadingScreen(downloadProgress)
+                    PdfBookLoading(downloadProgress)
                 } else if (error != null) {
-                    DynamicErrorScreen(error!!) { retryTrigger++ }
+                    PdfBookError(error!!) { retryTrigger++ }
                 } else if (pdfFile != null) {
+                    // Realistic Book Flip Horizontal Pager
                     HorizontalPager(
                         state = pagerState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 40.dp, vertical = 20.dp),
-                        pageSpacing = 24.dp,
-                        beyondBoundsPageCount = 1,
-                        userScrollEnabled = globalScale == 1f
+                        beyondBoundsPageCount = 2,
+                        userScrollEnabled = globalScale == 1f,
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+                        pageSpacing = 0.dp
                     ) { pageIndex ->
-                        ZoomablePdfPage(
-                            file = pdfFile!!,
-                            index = pageIndex,
-                            scale = if (pagerState.currentPage == pageIndex) globalScale else 1f,
-                            onScaleChange = { if (pagerState.currentPage == pageIndex) globalScale = it }
-                        )
+                        val pageOffset = ((pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction)
+                        
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    cameraDistance = 14f * density
+                                    val pivotX = if (pageOffset > 0f) 1f else 0f
+                                    transformOrigin = TransformOrigin(pivotX, 0.5f)
+                                    rotationY = -115f * pageOffset.coerceIn(-1f, 1f)
+                                    alpha = (1f - pageOffset.absoluteValue * 0.45f).coerceIn(0.6f, 1f)
+                                    val sc = (1f - pageOffset.absoluteValue * 0.12f).coerceIn(0.88f, 1f)
+                                    scaleX = sc
+                                    scaleY = sc
+                                }
+                                .drawBehind {
+                                    if (pageOffset.absoluteValue > 0) {
+                                        val shadowWidth = 35.dp.toPx()
+                                        val shadowAlpha = (pageOffset.absoluteValue * 0.35f).coerceIn(0f, 0.35f)
+                                        val brush = if (pageOffset > 0) {
+                                            Brush.horizontalGradient(
+                                                colors = listOf(Color.Black.copy(alpha = shadowAlpha), Color.Transparent),
+                                                startX = size.width - shadowWidth,
+                                                endX = size.width
+                                            )
+                                        } else {
+                                            Brush.horizontalGradient(
+                                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = shadowAlpha)),
+                                                startX = 0f,
+                                                endX = shadowWidth
+                                            )
+                                        }
+                                        drawRect(brush)
+                                    }
+                                }
+                        ) {
+                            PdfPageZoomable(
+                                file = pdfFile!!,
+                                index = pageIndex,
+                                scale = if (pagerState.currentPage == pageIndex) globalScale else 1f,
+                                onScaleChange = { if (pagerState.currentPage == pageIndex) globalScale = it }
+                            )
+                        }
                     }
                 }
             }
@@ -266,14 +308,14 @@ fun PdfViewerScreen(
 }
 
 @Composable
-fun ZoomablePdfPage(
+fun PdfPageZoomable(
     file: File,
     index: Int,
     scale: Float,
     onScaleChange: (Float) -> Unit
 ) {
     var offset by remember { mutableStateOf(Offset.Zero) }
-    val animatedScale by animateFloatAsState(targetValue = scale, animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow), label = "zoom_anim")
+    val animatedScale by animateFloatAsState(targetValue = scale, animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow), label = "zoom")
     
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
         onScaleChange((scale * zoomChange).coerceIn(1f, 5f))
@@ -296,12 +338,12 @@ fun ZoomablePdfPage(
             ),
         contentAlignment = Alignment.Center
     ) {
-        HighQualityPdfPage(file, index)
+        PdfPageCard(file, index)
     }
 }
 
 @Composable
-fun HighQualityPdfPage(file: File, index: Int) {
+fun PdfPageCard(file: File, index: Int) {
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     LaunchedEffect(index) {
         withContext(Dispatchers.IO) {
@@ -318,11 +360,10 @@ fun HighQualityPdfPage(file: File, index: Int) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth().aspectRatio(0.72f),
-        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.fillMaxWidth().aspectRatio(0.707f).shadow(15.dp, RoundedCornerShape(12.dp)),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-        border = BorderStroke(1.dp, Color(0xFFF1F5F9))
+        border = BorderStroke(1.dp, Color(0xFFE2E8F0))
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (bitmap != null) {
@@ -333,14 +374,14 @@ fun HighQualityPdfPage(file: File, index: Int) {
                     contentScale = ContentScale.Fit
                 )
             } else {
-                CircularProgressIndicator(color = Color(0xFF6366F1).copy(alpha = 0.2f), strokeWidth = 4.dp)
+                CircularProgressIndicator(color = Color(0xFF6366F1).copy(alpha = 0.3f))
             }
         }
     }
 }
 
 @Composable
-fun PdfActionBottomBar(
+fun PdfReaderControls(
     currentPage: Int,
     pageCount: Int,
     currentScale: Float,
@@ -350,78 +391,42 @@ fun PdfActionBottomBar(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 28.dp)
-            .shadow(32.dp, RoundedCornerShape(32.dp)),
+            .padding(16.dp)
+            .shadow(24.dp, RoundedCornerShape(28.dp)),
         color = Color.White.copy(alpha = 0.98f),
-        shape = RoundedCornerShape(32.dp),
+        shape = RoundedCornerShape(28.dp),
         border = BorderStroke(1.dp, Color(0xFFF1F5F9))
     ) {
         Row(
-            modifier = Modifier.padding(14.dp).fillMaxWidth(),
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // Zoom Controls
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.background(Color(0xFFF8FAFC), RoundedCornerShape(20.dp)).padding(4.dp)
+                modifier = Modifier.background(Color(0xFFF8FAFC), RoundedCornerShape(20.dp)).padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
-                IconButton(
-                    onClick = { onScaleChange((currentScale - 0.5f).coerceAtLeast(1f)) },
-                    modifier = Modifier.size(40.dp).background(Color.White, CircleShape).shadow(2.dp, CircleShape)
-                ) {
-                    Icon(Icons.Rounded.ZoomOut, null, modifier = Modifier.size(22.dp), tint = Color(0xFF6366F1))
+                IconButton(onClick = { onScaleChange((currentScale - 0.5f).coerceAtLeast(1f)) }) {
+                    Icon(Icons.Default.ZoomOut, null, tint = Color(0xFF6366F1))
                 }
-                
-                Text(
-                    "${(currentScale * 100).toInt()}%",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Black,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = Color(0xFF1E293B)
-                )
-                
-                IconButton(
-                    onClick = { onScaleChange((currentScale + 0.5f).coerceAtMost(5f)) },
-                    modifier = Modifier.size(40.dp).background(Color.White, CircleShape).shadow(2.dp, CircleShape)
-                ) {
-                    Icon(Icons.Rounded.ZoomIn, null, modifier = Modifier.size(22.dp), tint = Color(0xFF6366F1))
+                Text("${(currentScale * 100).toInt()}%", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = Color(0xFF1E293B))
+                IconButton(onClick = { onScaleChange((currentScale + 0.5f).coerceAtMost(5f)) }) {
+                    Icon(Icons.Default.ZoomIn, null, tint = Color(0xFF6366F1))
                 }
             }
 
-            // Navigation
+            // Page Pager
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.background(Color(0xFF6366F1).copy(0.12f), RoundedCornerShape(24.dp)).padding(4.dp)
+                modifier = Modifier.background(Color(0xFF6366F1).copy(0.08f), RoundedCornerShape(20.dp)).padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
-                IconButton(
-                    onClick = { onPageJump(currentPage - 1) },
-                    enabled = currentPage > 0,
-                    modifier = Modifier.size(42.dp)
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = if(currentPage > 0) Color(0xFF6366F1) else Color(0xFFCBD5E1), modifier = Modifier.size(24.dp))
+                IconButton(onClick = { onPageJump(currentPage - 1) }, enabled = currentPage > 0) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = if(currentPage > 0) Color(0xFF6366F1) else Color.LightGray)
                 }
-                
-                Surface(
-                    color = Color.White,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.padding(horizontal = 6.dp).shadow(1.dp, RoundedCornerShape(16.dp))
-                ) {
-                    Text(
-                        "${currentPage + 1} / $pageCount",
-                        modifier = Modifier.padding(horizontal = 6.dp),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 15.sp,
-                        color = Color(0xFF1E293B)
-                    )
-                }
-
-                IconButton(
-                    onClick = { onPageJump(currentPage + 1) },
-                    enabled = currentPage < pageCount - 1,
-                    modifier = Modifier.size(42.dp)
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = if(currentPage < pageCount - 1) Color(0xFF6366F1) else Color(0xFFCBD5E1), modifier = Modifier.size(24.dp))
+                Text("${currentPage + 1} / $pageCount", fontWeight = FontWeight.Black, fontSize = 15.sp, color = Color(0xFF1E293B))
+                IconButton(onClick = { onPageJump(currentPage + 1) }, enabled = currentPage < pageCount - 1) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = if(currentPage < pageCount - 1) Color(0xFF6366F1) else Color.LightGray)
                 }
             }
         }
@@ -429,93 +434,44 @@ fun PdfActionBottomBar(
 }
 
 @Composable
-fun DynamicLoadingScreen(progress: Float) {
-    val infiniteTransition = rememberInfiniteTransition(label = "loading_anim")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(animation = tween(2000, easing = LinearEasing), repeatMode = RepeatMode.Restart), label = "rotation"
-    )
-    val pulse by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(animation = tween(1000, easing = FastOutSlowInEasing), repeatMode = RepeatMode.Reverse), label = "pulse"
-    )
-
+fun PdfBookLoading(progress: Float) {
     Column(
         modifier = Modifier.fillMaxSize().background(Color.White),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.scale(pulse)) {
-            // Background Track
-            Canvas(modifier = Modifier.size(160.dp)) {
-                drawCircle(color = Color(0xFFF1F5F9), radius = size.minDimension / 2, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 16.dp.toPx(), cap = StrokeCap.Round))
-            }
-            // Pulsing Glow
-            Surface(modifier = Modifier.size(130.dp).scale(pulse), shape = CircleShape, color = Color(0xFF6366F1).copy(0.05f)) {}
-            
-            // Circular Progress
-            CircularProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.size(160.dp).rotate(rotation),
-                color = Color(0xFF6366F1),
-                strokeWidth = 14.dp,
-                strokeCap = StrokeCap.Round
-            )
-            
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "${(progress * 100).toInt()}%", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color(0xFF1E293B))
-                Text("FETCHING", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6366F1), letterSpacing = 2.sp)
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(60.dp))
-        Text("Connecting to Library...", fontWeight = FontWeight.Black, fontSize = 22.sp, color = Color(0xFF1E293B))
-        Text("Preparing your books for offline use", fontSize = 15.sp, color = Color(0xFF64748B), modifier = Modifier.padding(top = 8.dp))
+        CircularProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.size(130.dp),
+            color = Color(0xFF6366F1),
+            strokeWidth = 12.dp,
+            strokeCap = StrokeCap.Round
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Text("Preparing Your Book...", fontWeight = FontWeight.Black, fontSize = 22.sp, color = Color(0xFF1E293B))
+        Text("${(progress * 100).toInt()}% Synchronized", color = Color.Gray, fontSize = 15.sp)
     }
 }
 
 @Composable
-fun DynamicErrorScreen(msg: String, onRetry: () -> Unit) {
-    val infiniteTransition = rememberInfiniteTransition(label = "error_anim")
-    val shake by infiniteTransition.animateFloat(
-        initialValue = -5f,
-        targetValue = 5f,
-        animationSpec = infiniteRepeatable(animation = tween(500, easing = FastOutSlowInEasing), repeatMode = RepeatMode.Reverse), label = "shake"
-    )
-
+fun PdfBookError(msg: String, onRetry: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp).background(Color.White),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Surface(
-            modifier = Modifier.size(180.dp).graphicsLayer(translationX = shake).shadow(24.dp, CircleShape),
-            shape = CircleShape,
-            color = Color(0xFFFFF1F2)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.Rounded.SignalWifiOff, null, modifier = Modifier.size(90.dp), tint = Color(0xFFF43F5E))
-            }
-        }
-        
+        Icon(Icons.Default.CloudOff, null, modifier = Modifier.size(90.dp), tint = Color(0xFFEF4444))
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Library Offline", fontWeight = FontWeight.Black, fontSize = 26.sp, color = Color(0xFF1E293B))
+        Text(msg, textAlign = TextAlign.Center, color = Color.Gray, modifier = Modifier.padding(top = 8.dp))
         Spacer(modifier = Modifier.height(48.dp))
-        Text("Internet Problem", fontWeight = FontWeight.Black, fontSize = 28.sp, color = Color(0xFF1E293B))
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("We couldn't reach the document server. Please check your data or Wi-Fi.", textAlign = TextAlign.Center, color = Color(0xFF64748B), fontSize = 17.sp, lineHeight = 26.sp)
-        
-        Spacer(modifier = Modifier.height(60.dp))
         Button(
-            onClick = onRetry,
-            modifier = Modifier.fillMaxWidth().height(68.dp).shadow(20.dp, RoundedCornerShape(24.dp)),
-            shape = RoundedCornerShape(24.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1)),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 12.dp)
+            onClick = onRetry, 
+            modifier = Modifier.fillMaxWidth().height(60.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
         ) {
-            Icon(Icons.Rounded.Refresh, null, modifier = Modifier.size(28.dp))
-            Spacer(Modifier.width(12.dp))
-            Text("Try Again", fontWeight = FontWeight.Black, fontSize = 19.sp)
+            Text("Try Reconnecting", fontWeight = FontWeight.Bold, fontSize = 17.sp)
         }
     }
 }
@@ -529,14 +485,9 @@ private fun downloadDirectPdfFile(url: String, f: File, onProgress: (Float) -> U
     for (i in 0..10) {
         val conn = URL(cur).openConnection() as HttpURLConnection
         conn.instanceFollowRedirects = true
-        conn.connectTimeout = 30000
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+        conn.connectTimeout = 40000
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
         if (conn.responseCode == 200) {
-            if (conn.contentType?.contains("html") == true) {
-                val h = conn.inputStream.bufferedReader().readText()
-                val t = "confirm=([a-zA-Z0-9_\\-]+)".toRegex().find(h)?.groupValues?.get(1)
-                if (t != null) { cur = if (cur.contains("?")) "$cur&confirm=$t" else "$cur?confirm=$t"; continue }
-            }
             val s = conn.contentLength
             conn.inputStream.use { input -> FileOutputStream(f).use { out ->
                 val b = ByteArray(65536); var r: Int; var t = 0

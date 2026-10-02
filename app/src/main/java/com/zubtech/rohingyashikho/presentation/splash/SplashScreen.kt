@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +37,6 @@ fun SplashScreen(
     
     val infiniteTransition = rememberInfiniteTransition(label = "floating")
     
-    // Main float for center hero
     val floatCenter by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = -12f,
@@ -47,7 +47,6 @@ fun SplashScreen(
         label = "floatCenter"
     )
     
-    // Float and rotate for small decorative element (graphic2) at top-left
     val floatSmall1 by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 15f,
@@ -84,7 +83,6 @@ fun SplashScreen(
             ),
         contentAlignment = Alignment.Center
     ) {
-        // Decorative Circular PNG 2 (Top Left)
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -105,7 +103,6 @@ fun SplashScreen(
             )
         }
 
-        // The central content (Hero + Text)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -114,7 +111,6 @@ fun SplashScreen(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.offset(y = floatCenter.dp)
             ) {
-                // Soft glow background behind hero
                 Box(
                     modifier = Modifier
                         .size(300.dp)
@@ -123,7 +119,6 @@ fun SplashScreen(
                         .background(AppPrimary, CircleShape)
                 )
                 
-                // Main Character (graphic1)
                 Image(
                     painter = painterResource(id = R.drawable.graphic1),
                     contentDescription = null,
@@ -144,10 +139,14 @@ fun SplashScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Rohingya Shikho",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = Color(0xFF1A1A1A),
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.5.sp
+                        style = TextStyle(
+                            fontSize = 34.sp,
+                            fontWeight = FontWeight.Black,
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF1E293B), Color(0xFF6366F1))
+                            ),
+                            letterSpacing = (-0.5).sp
+                        )
                     )
                     
                     Text(

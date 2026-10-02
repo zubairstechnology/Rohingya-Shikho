@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.gson)
     implementation(libs.lottie.compose)
+    implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

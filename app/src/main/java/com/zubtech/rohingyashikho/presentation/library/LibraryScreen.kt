@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,8 +29,8 @@ import androidx.compose.ui.unit.sp
 fun LibraryScreen(
     onNavigateToConsonants: () -> Unit,
     onNavigateToVowels: () -> Unit,
-    onNavigateToPdf: () -> Unit,
-    onNavigateToDrawing: () -> Unit
+    onNavigateToNumbers: () -> Unit,
+    onNavigateToPdf: () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
@@ -104,11 +105,34 @@ fun LibraryScreen(
                         CategoryCard(
                             title = "Vowels",
                             subtitle = "Haraka & Rules",
-                            icon = Icons.Default.MenuBook,
+                            icon = Icons.AutoMirrored.Filled.MenuBook,
                             color = Color(0xFFEC4899),
                             onClick = onNavigateToVowels
                         )
                     }
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CategoryItemWrapper(
+                        modifier = Modifier.weight(1f),
+                        visible = visible,
+                        delay = 350,
+                        enterFromLeft = true
+                    ) {
+                        CategoryCard(
+                            title = "Numbers",
+                            subtitle = "0-9 Digits",
+                            icon = Icons.Default.Pin,
+                            color = Color(0xFFF59E0B),
+                            onClick = onNavigateToNumbers
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
 
@@ -120,18 +144,6 @@ fun LibraryScreen(
                         icon = Icons.Default.Book,
                         color = Color(0xFF10B981),
                         onClick = onNavigateToPdf
-                    )
-                }
-            }
-
-            item {
-                ResourceItemWrapper(visible = visible, delay = 500) {
-                    ResourceCard(
-                        title = "Writing Practice",
-                        description = "Interactive drawing and Hanifi script.",
-                        icon = Icons.Default.Draw,
-                        color = Color(0xFFF59E0B),
-                        onClick = onNavigateToDrawing
                     )
                 }
             }

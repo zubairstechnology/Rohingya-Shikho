@@ -23,6 +23,7 @@ data class LessonUiState(
     val isLoading: Boolean = true,
     val isCompleted: Boolean = false,
     val isRecording: Boolean = false,
+
     val recordedFile: File? = null
 ) {
     val currentItem: LessonItem? get() = lesson?.items?.getOrNull(currentItemIndex)

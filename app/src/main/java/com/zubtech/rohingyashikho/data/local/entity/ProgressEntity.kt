@@ -32,8 +32,11 @@ data class UserStatsEntity(
     val isAlphabetQuizUnlocked: Boolean = false,
     val consonantProgress: Float = 0f,
     val vowelProgress: Float = 0f,
+    val numberProgress: Float = 0f,
     val recognitionProgress: Float = 0f,
     val quizProgress: Float = 0f,
     val vowelRecognitionProgress: Float = 0f,
-    val vowelQuizProgress: Float = 0f
+    val vowelQuizProgress: Float = 0f,
+    val numberRecognitionProgress: Float = 0f,
+    val numberQuizProgress: Float = 0f
 )

@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,7 +63,10 @@ fun AlphabetCombinationScreen(
         return
     }
 
-    val displayConsonants = remember(consonants) { consonants.take(28) }
+    // Display all consonants including dda, ka, na, rra, sha, nga
+    val displayConsonants = remember(consonants) { consonants }
+    
+    // Remain only the five primary vowels as requested
     val mainVowels = remember(vowels) { vowels.take(5) }
     val pagerState = rememberPagerState(pageCount = { mainVowels.size })
 
@@ -101,7 +105,7 @@ fun AlphabetCombinationScreen(
                                 color = Color(0xFF1E293B)
                             )
                             Text(
-                                "Visual Learning Studio",
+                                "Page ${pagerState.currentPage + 1} of 5",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = currentThemeColor.copy(alpha = 0.8f),
                                 fontWeight = FontWeight.Bold
@@ -132,7 +136,7 @@ fun AlphabetCombinationScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                // Luxury Vowel Selection Bar
+                // Luxury Vowel Selection Bar (5 Vowels)
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -167,8 +171,9 @@ fun AlphabetCombinationScreen(
                                 selected = isSelected,
                                 onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                                 text = {
+                                    val cleanVowelText = vowel.scriptText.replace("◌", "").replace("𐴀", "")
                                     Text(
-                                        text = vowel.scriptText,
+                                        text = cleanVowelText,
                                         fontSize = if (isSelected) 34.sp else 24.sp,
                                         fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
                                         color = if (isSelected) currentThemeColor else Color(0xFF94A3B8)
@@ -270,8 +275,9 @@ fun VowelHeroCard(vowel: LessonItem, color: Color) {
                     color = Color.White.copy(alpha = 0.25f)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
+                        val cleanVowelText = vowel.scriptText.replace("◌", "").replace("𐴀", "")
                         Text(
-                            vowel.scriptText,
+                            cleanVowelText,
                             color = Color.White,
                             fontSize = 54.sp,
                             fontWeight = FontWeight.Black
@@ -323,7 +329,7 @@ fun AnimatedBeautyGrid(
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(4),
-            contentPadding = PaddingValues(start = 24.dp, top = 32.dp, end = 24.dp, bottom = 120.dp),
+            contentPadding = PaddingValues(start = 24.dp, top = 32.dp, end = 24.dp, bottom = 180.dp), // Bottom padding for better scroll
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
@@ -338,9 +344,9 @@ fun AnimatedBeautyGrid(
 
                 AnimatedVisibility(
                     visible = isVisible,
-                    enter = fadeIn(tween(700, index * 25)) +
-                            scaleIn(tween(700, index * 25), initialScale = 0.8f) +
-                            slideInVertically(tween(700, index * 25)) { it / 3 }
+                    enter = fadeIn(tween(600, index * 10)) +
+                            scaleIn(tween(600, index * 10), initialScale = 0.9f) +
+                            slideInVertically(tween(600, index * 10)) { it / 4 }
                 ) {
                     ModernLuxuryCombinationCard(consonant, vowel, themeColor) {
                         viewModel.playAudio(consonant)
@@ -362,50 +368,62 @@ fun ModernLuxuryCombinationCard(
     val isPressed by interactionSource.collectIsPressedAsState()
     
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
-        animationSpec = spring(dampingRatio = 0.5f, stiffness = 400f),
+        targetValue = if (isPressed) 0.94f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessLow),
         label = "scale"
     )
 
     val shadowIntensity by animateDpAsState(
-        targetValue = if (isPressed) 4.dp else 16.dp,
+        targetValue = if (isPressed) 4.dp else 12.dp,
         label = "shadow"
     )
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.82f)
+            .aspectRatio(0.85f)
             .scale(scale)
             .shadow(
                 elevation = shadowIntensity,
-                shape = RoundedCornerShape(28.dp),
-                spotColor = themeColor.copy(alpha = 0.5f)
+                shape = RoundedCornerShape(24.dp),
+                spotColor = themeColor.copy(alpha = 0.4f)
             )
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             ),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(
-            width = 2.dp,
-            color = if (isPressed) themeColor else themeColor.copy(alpha = 0.08f)
+            width = 1.5.dp,
+            color = themeColor.copy(alpha = 0.15f)
         )
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(10.dp),
+            modifier = Modifier.fillMaxSize().padding(6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            val cleanConsonant = consonant.scriptText.replace("𐴢", "")
+            // Robust cleaning logic for ALL characters including dda, ka, na, rra, sha, nga
+            val harbahayMark = "𐴢"
+            val dottedCircle = "◌"
+            val carrierA = "𐴀"
+            
+            val cleanConsonant = consonant.scriptText.replace(harbahayMark, "").trim()
+            val cleanVowel = vowel.scriptText
+                .replace(dottedCircle, "")
+                .replace(carrierA, "")
+                .replace(harbahayMark, "")
+                .trim()
+            
             Text(
-                text = "${cleanConsonant}${vowel.scriptText}",
-                fontSize = 44.sp,
+                text = "${cleanConsonant}${cleanVowel}",
+                fontSize = 42.sp,
                 fontWeight = FontWeight.Black,
                 color = Color(0xFF1E293B),
-                lineHeight = 48.sp
+                lineHeight = 44.sp,
+                textAlign = TextAlign.Center
             )
         }
     }

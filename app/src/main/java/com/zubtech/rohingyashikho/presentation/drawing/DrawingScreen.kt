@@ -153,7 +153,7 @@ fun DrawingScreen(
                                 IconButton(
                                     onClick = { viewModel.navigateToPrev() },
                                     enabled = uiState.hasPrev,
-                                    modifier = Modifier.size(48.dp).background(if(uiState.hasPrev) Color.White.copy(alpha = 0.4f) else Color.Transparent, CircleShape)
+                                    modifier = Modifier.size(48.dp)
                                 ) {
                                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, tint = if(uiState.hasPrev) themeColor else Color.Transparent)
                                 }
@@ -205,7 +205,7 @@ fun DrawingScreen(
                                 IconButton(
                                     onClick = { viewModel.navigateToNext() },
                                     enabled = uiState.hasNext,
-                                    modifier = Modifier.size(48.dp).background(if(uiState.hasNext) Color.White.copy(alpha = 0.4f) else Color.Transparent, CircleShape)
+                                    modifier = Modifier.size(48.dp)
                                 ) {
                                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = if(uiState.hasNext) themeColor else Color.Transparent)
                                 }
