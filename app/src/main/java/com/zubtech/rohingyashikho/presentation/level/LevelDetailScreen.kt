@@ -33,11 +33,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -262,20 +264,22 @@ fun DynamicMeshHero() {
 fun LevelDetailHero(levelId: String, levelTag: String, levelTitle: String, onBack: () -> Unit) {
     Box(modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 24.dp, vertical = 16.dp)) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack, modifier = Modifier.size(48.dp).background(Color.White.copy(alpha = 0.18f), CircleShape).border(1.dp, Color.White.copy(alpha = 0.25f), CircleShape)) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, null, tint = Color.White, modifier = Modifier.size(26.dp))
-                }
-                
-                // Polished Circular Progress Indicator
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(92.dp).background(brush = Brush.radialGradient(colors = listOf(Color.White.copy(alpha = 0.25f), Color.White.copy(alpha = 0.05f))), shape = CircleShape).border(1.5.dp, Color.White.copy(alpha = 0.3f), CircleShape).shadow(8.dp, CircleShape, clip = false, spotColor = Color.White.copy(alpha = 0.25f))
-                ) {
-                    CircularProgressIndicator(progress = { 0.42f }, modifier = Modifier.size(80.dp), color = Color(0xFF4ADE80), strokeWidth = 6.dp, trackColor = Color.White.copy(alpha = 0.2f), strokeCap = StrokeCap.Round)
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        Text(text = "42%", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = (-0.5).sp)
-                        Text(text = "DONE", color = Color.White.copy(alpha = 0.7f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onBack, modifier = Modifier.size(48.dp).background(Color.White.copy(alpha = 0.18f), CircleShape).border(1.dp, Color.White.copy(alpha = 0.25f), CircleShape)) {
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, null, tint = Color.White, modifier = Modifier.size(26.dp))
+                    }
+                    
+                    // Polished Circular Progress Indicator
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(92.dp).background(brush = Brush.radialGradient(colors = listOf(Color.White.copy(alpha = 0.25f), Color.White.copy(alpha = 0.05f))), shape = CircleShape).border(1.5.dp, Color.White.copy(alpha = 0.3f), CircleShape).shadow(8.dp, CircleShape, clip = false, spotColor = Color.White.copy(alpha = 0.25f))
+                    ) {
+                        CircularProgressIndicator(progress = { 0.42f }, modifier = Modifier.size(80.dp), color = Color(0xFF4ADE80), strokeWidth = 6.dp, trackColor = Color.White.copy(alpha = 0.2f), strokeCap = StrokeCap.Round)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                            Text(text = "42%", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = (-0.5).sp)
+                            Text(text = "DONE", color = Color.White.copy(alpha = 0.7f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

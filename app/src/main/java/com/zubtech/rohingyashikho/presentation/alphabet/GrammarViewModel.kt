@@ -34,8 +34,11 @@ class GrammarViewModel @Inject constructor(
     private val _highlightedEnglishIndex = MutableStateFlow(-1)
     val highlightedEnglishIndex: StateFlow<Int> = _highlightedEnglishIndex.asStateFlow()
 
-    private val _playingAudioType = MutableStateFlow<String?>(null) // "native", "english", "tts", "native_word"
+    private val _playingAudioType = MutableStateFlow<String?>(null) // "native", "english", "tts", "native_word", "example_tts", "example_native"
     val playingAudioType: StateFlow<String?> = _playingAudioType.asStateFlow()
+
+    private val _playingExampleIndex = MutableStateFlow(-1)
+    val playingExampleIndex: StateFlow<Int> = _playingExampleIndex.asStateFlow()
 
     private var playbackJob: Job? = null
     private var currentTextToSpeak: String = ""
@@ -55,17 +58,19 @@ class GrammarViewModel @Inject constructor(
     private fun setupUtteranceListener() {
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {
-                _playingAudioType.value = "tts"
+                // Keep playing type set by trigger function
             }
 
             override fun onDone(utteranceId: String?) {
                 _playingAudioType.value = null
                 _highlightedEnglishIndex.value = -1
+                _playingExampleIndex.value = -1
             }
 
             override fun onError(utteranceId: String?) {
                 _playingAudioType.value = null
                 _highlightedEnglishIndex.value = -1
+                _playingExampleIndex.value = -1
             }
 
             override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
@@ -80,7 +85,9 @@ class GrammarViewModel @Inject constructor(
                         }
                         charCount += words[i].length + 1
                     }
-                    _highlightedEnglishIndex.value = targetWordIdx
+                    if (_playingAudioType.value == "tts") {
+                        _highlightedEnglishIndex.value = targetWordIdx
+                    }
                 }
             }
         })
@@ -99,9 +106,7 @@ class GrammarViewModel @Inject constructor(
               ?: voices?.find { it.locale.country == "GB" }
             
             britishMaleVoice?.let { tts?.voice = it }
-            // 龜 Speed: 0.9–1.0×
             tts?.setSpeechRate(0.95f)
-            // 🎵 Pitch: Natural / Default
             tts?.setPitch(1.0f) 
         } catch (e: Exception) {}
     }
@@ -115,6 +120,19 @@ class GrammarViewModel @Inject constructor(
             val params = Bundle()
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "grammar_tts")
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "grammar_tts")
+        }
+    }
+
+    fun speakExampleEnglish(text: String, index: Int) {
+        stopAudio()
+        if (_isTtsReady.value) {
+            setupBritishMaleVoice()
+            currentTextToSpeak = text
+            _playingExampleIndex.value = index
+            _playingAudioType.value = "example_tts"
+            val params = Bundle()
+            params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "example_tts_$index")
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "example_tts_$index")
         }
     }
 
@@ -135,6 +153,26 @@ class GrammarViewModel @Inject constructor(
             audioPlayer.playAsset("audio/grammar/$audioFile")
             _playingAudioType.value = "english"
             startHighlighting(wordTimings, isNative = false)
+        }
+    }
+
+    fun playExampleNative(audioFile: String, index: Int) {
+        if (audioFile.isEmpty()) {
+            // Fallback to TTS if no audio file, though not ideal for Rohingya
+            return
+        }
+        stopAudio()
+        viewModelScope.launch {
+            audioPlayer.playAsset("audio/grammar/examples/$audioFile")
+            _playingExampleIndex.value = index
+            _playingAudioType.value = "example_native"
+            
+            // Wait for audio to finish (simple delay for now as audioPlayer doesn't have listener here)
+            // Ideally AudioPlayer should have a completion callback
+            delay(3000) 
+            if (_playingExampleIndex.value == index && _playingAudioType.value == "example_native") {
+                stopAudio()
+            }
         }
     }
 
@@ -194,6 +232,7 @@ class GrammarViewModel @Inject constructor(
         _highlightedNativeIndex.value = -1
         _highlightedEnglishIndex.value = -1
         _playingAudioType.value = null
+        _playingExampleIndex.value = -1
         currentTextToSpeak = ""
     }
 

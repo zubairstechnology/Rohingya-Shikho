@@ -50,6 +50,7 @@ fun GrammarScreen(
     val highlightedNativeIndex by viewModel.highlightedNativeIndex.collectAsState()
     val highlightedEnglishIndex by viewModel.highlightedEnglishIndex.collectAsState()
     val playingAudioType by viewModel.playingAudioType.collectAsState()
+    val playingExampleIndex by viewModel.playingExampleIndex.collectAsState()
 
     val basicGrammar = remember {
         listOf(
@@ -70,10 +71,10 @@ fun GrammarScreen(
                     GrammarExample("Burial", "𐴊𐴡𐴜𐴕𐴢"),
                     GrammarExample("Forest", "𐴁𐴝𐴕𐴢"),
                     GrammarExample("Crowd", "𐴒𐴡𐴕𐴢"),
-                    GrammarExample("Salt", "𐴓𐴡𐴕𐴢"),
-                    GrammarExample("Mind", "𐴔𐴡𐴕𐴢"),
-                    GrammarExample("Body", "𐴃𐴡𐴕𐴢"),
-                    GrammarExample("Who", "𐴑𐴡𐴕𐴢"),
+                    GrammarExample("Salt", "𐴓𐴡𐴕𞴢"),
+                    GrammarExample("Mind", "𐴔𐴡𐴕𞴢"),
+                    GrammarExample("Body", "𐴃𐴡𐴕𞴢"),
+                    GrammarExample("Who", "𐴑𐴡𐴕𞴢"),
                     GrammarExample("Drink", "𐴉𐴝𐴕"),
                     GrammarExample("Respect", "𐴔𐴝𐴕"),
                     GrammarExample("Life", "𐴎𐴡𐴕")
@@ -108,7 +109,7 @@ fun GrammarScreen(
                 nativeName = "𐴇𐴝𐴥𐴌 𐴁𐴝𐴤𐴘",
                 scriptSign = "𐴤",
                 description = "Marks a consonant soft sound stop.",
-                nativeDescription = "𐴇𐴝𐴥𐴌𐴁𐴝𐴤𐴘 𐴈𐴡𐴀𐴠 𐴀𐴠𐴀𐴕 𐴀𐴟𐴒𐴗𐴧𐴝𐴤 𐴎𐴟𐴌 𐴈𐴡𐴔 𐴀𐴡𐴦𐴓𐴝 𐴀𐴝𐴁𐴝𐴏𐴌𞴠𞴥 𞴎𞴞𞴁𞴝𐴤 𞴒𐴝𐴓𐴡𐴃𐴧𐴟𐴥 𞴕𞴞𞴘𞴡𞴙𞴓𞴃𞴠 𞴎𞴟𞴌 𞴈𞴡𞴔 𞴀𞴡𐴥𐴕𞴦𐴡 𞴎𞴡𐴌𞴘𞴝 𞴀𞴠𞴑𞴧𞴠𞴕𞴝 𞴇𐴝𐴥𐴌 𐴀𐴝𐴁𐴝𐴏 𐴀𐴝𐴘𞴧𞴠𞴥 郁𞴝𞴕 𞴓𞴝𞴒𞴠.",
+                nativeDescription = "𐴇𐴝𐴥𐴌𐴁𐴝𐴤𐴘 𐴈𐴡𐴀𐴠 𐴀𐴠𐴀𐴕 𐴀𐴟𐴒𐴗𐴧𐴝𐴤 𐴎𐴟𐴌 𐴈𐴡𐴔 𐴀𐴡𐴦𐴓𐴝 𐴀𐴝𐴁𐴝𐴏𐴌𞴠𞴥 𞴎𞴞𞴁𞴝𐴤 𞴒𐴝𐴓𐴡𐴃𐴧𐴟𞴥 𞴕𞴞𞴘𞴡𞴙𞴓𞴃𞴠 𞴎𞴟𞴌 𞴈𞴡𞴔 𞴀𞴡𐴥𞴕𞴦𐴡 𞴎𞴡𐴌𞴘𞴝 𞴀𞴠𞴑𞴧𞴠𞴕𞴝 𞴇𐴝𐴥𐴌 𐴀𐴝𐴁𐴝𐴏 𐴀𐴝𐴘𞴧𞴠𞴥 郁𞴝𞴕 𞴓𞴝𞴒𞴠.",
                 example = "𐴁𐴝𐴤𐴌𐴡",
                 exampleEnglish = "Baro (Soft Stop)",
                 accentColor = Color(0xFF8B5CF6),
@@ -209,7 +210,7 @@ fun GrammarScreen(
                 nativeName = "𐴃𐴝𐴕𐴝 𐴃𐴠𐴓𐴝 (𐴤𐴥)",
                 scriptSign = "◌𐴤𐴥",
                 description = "Complex combining tone markers for inflection.",
-                nativeDescription = "𐴏𐴟𐴌𐴡𐴌 𐴓𐴝𐴔𐴝𐴘𞴝 𞴀𞴝 𞴟𞴌𞴠𞴥 𞴃𞴝𞴕𞴞𞴘𞴝 𞴞𞴓𞴝𞴘𞴝 𞴡𞴘𞴝 𞴎𞴝𞴘𞴠𞴿",
+                nativeDescription = "𐴏𐴟𐴌𐴡𐴌 𐴓𐴝𐴔𐴝𐴘𞴝 𞴀𞴝 𞴟𞴌𞴠𞴥 𞴃𞴝𞴕𞴞𞴘𞴝 𞴞𞴓𞴝𞴘𞴝 𞴡𞴘𞴝 𞴎𞴝𞴘𞠠𞴿",
                 example = "𐴁𐴝𐴤𐴌𐴡𐴥",
                 exampleEnglish = "Baro-Tana (Inflected)",
                 accentColor = Color(0xFF059669),
@@ -232,7 +233,7 @@ fun GrammarScreen(
                     GrammarExample("We drink water", "𐴔𐴝\u200C\u200C𐴌𐴝 𐴉𐴝𐴕 𞴝𞴘"),
                     GrammarExample("I see a bird", "𐴔𐴝\u200C\u200C𐴥 𐴉𐴝 "),
                     GrammarExample("You come here", "𐴃𐴟𐴘 𐴇 𞴝𞴘𞴡"),
-                    GrammarExample("He loves mother", "𐴇 𞴝𐴥 𞴡𞴇𞴡𞴁𞴧𞴡𞴃𢃢 𞴡𞴌"),
+                    GrammarExample("He loves mother", "𐴇 𞴝𞴥 𞴡𞴇𞴡𞴁𞴧𞴡𞴃𢃢 𞴡𞴌"),
                     GrammarExample("It is raining", "𐴎𐴡𐴌 𐴇𐴡𐴘 𐴓𐴝\u200C𐴒𐴠"),
                     GrammarExample("Sun rises", "𐴁𐴠𐴓𢃢 𐴟𐴑𐴠")
                 )
@@ -487,7 +488,7 @@ fun GrammarScreen(
 
                                             // English Audio Button below English text
                                             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                                                val isEnglishPlaying = playingAudioType == "english" || playingAudioType == "tts"
+                                                val isEnglishPlaying = (playingAudioType == "english" || playingAudioType == "tts") && playingExampleIndex == -1
                                                 IconButton(
                                                     onClick = { 
                                                         if (item.englishAudioFile.isNotEmpty()) {
@@ -545,7 +546,7 @@ fun GrammarScreen(
 
                                             // Native Song icon button below Hanifi script
                                             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
-                                                val isNativePlaying = playingAudioType == "native"
+                                                val isNativePlaying = playingAudioType == "native" && playingExampleIndex == -1
                                                 IconButton(
                                                     onClick = { viewModel.playNativeSong(item.nativeAudioFile, item.nativeWordTimings) },
                                                     modifier = Modifier
@@ -661,12 +662,19 @@ fun GrammarScreen(
                                                             letterSpacing = 1.5.sp
                                                         )
                                                         Spacer(Modifier.weight(1f))
+                                                        
+                                                        val isExampleTtsPlaying = playingAudioType == "example_tts" && playingExampleIndex == page
                                                         Surface(
-                                                            color = item.accentColor.copy(alpha = 0.08f),
+                                                            color = if (isExampleTtsPlaying) Color(0xFFFFD700) else item.accentColor.copy(alpha = 0.08f),
                                                             shape = CircleShape,
-                                                            onClick = { viewModel.speakEnglish(example.english) }
+                                                            onClick = { viewModel.speakExampleEnglish(example.english, page) }
                                                         ) {
-                                                            Icon(Icons.AutoMirrored.Rounded.VolumeUp, null, tint = item.accentColor, modifier = Modifier.padding(8.dp).size(20.dp))
+                                                            Icon(
+                                                                imageVector = if (isExampleTtsPlaying) Icons.Rounded.MusicNote else Icons.AutoMirrored.Rounded.VolumeUp, 
+                                                                null, 
+                                                                tint = if (isExampleTtsPlaying) Color.White else item.accentColor, 
+                                                                modifier = Modifier.padding(8.dp).size(20.dp)
+                                                            )
                                                         }
                                                     }
 
@@ -707,21 +715,26 @@ fun GrammarScreen(
                                                             horizontalArrangement = Arrangement.End,
                                                             modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
                                                         ) {
+                                                            val isExampleNativePlaying = playingAudioType == "example_native" && playingExampleIndex == page
                                                             Surface(
-                                                                color = item.accentColor.copy(alpha = 0.08f),
+                                                                color = if (isExampleNativePlaying) Color(0xFFFFD700) else item.accentColor.copy(alpha = 0.08f),
                                                                 shape = CircleShape,
-                                                                onClick = { viewModel.speakEnglish(example.native) }
+                                                                onClick = { 
+                                                                    val fileName = "example_${item.name.lowercase().replace(" ", "_")}_$page.mp3"
+                                                                    viewModel.playExampleNative(fileName, page) 
+                                                                }
                                                             ) {
                                                                 Box(
                                                                     modifier = Modifier.size(36.dp),
                                                                     contentAlignment = Alignment.Center
                                                                 ) {
-                                                                    // Mini dynamic breathing/living effect box
-                                                                    GrammarPulseIndicator(color = item.accentColor, modifier = Modifier.size(36.dp))
+                                                                    if (isExampleNativePlaying) {
+                                                                        GrammarPulseIndicator(color = item.accentColor, modifier = Modifier.size(36.dp))
+                                                                    }
                                                                     Icon(
-                                                                        Icons.AutoMirrored.Rounded.VolumeUp, 
+                                                                        if (isExampleNativePlaying) Icons.Rounded.MusicNote else Icons.AutoMirrored.Rounded.VolumeUp, 
                                                                         null, 
-                                                                        tint = item.accentColor, 
+                                                                        tint = if (isExampleNativePlaying) Color.White else item.accentColor, 
                                                                         modifier = Modifier.size(20.dp)
                                                                     )
                                                                 }
@@ -854,7 +867,8 @@ fun GrammarTopBar(levelId: String, onNavigateBack: () -> Unit) {
 
 data class GrammarExample(
     val english: String,
-    val native: String
+    val native: String,
+    val nativeAudio: String = ""
 )
 
 data class GrammarModel(

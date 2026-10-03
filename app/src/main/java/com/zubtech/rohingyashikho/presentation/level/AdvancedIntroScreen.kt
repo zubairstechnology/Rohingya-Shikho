@@ -104,7 +104,7 @@ fun AdvancedIntroScreen(
                 }
             }
 
-            // Interactive Sticky Top Bar
+            // Interactive Sticky Top Bar - Wrapped in LTR to ensure BACK is on left
             AdvancedInteractiveTopBar(scrollState, onNavigateBack)
 
             // Responsive Floating CTA Button
@@ -266,59 +266,61 @@ fun AdvancedInteractiveTopBar(scrollState: ScrollState, onBack: () -> Unit) {
 
     val contentColor = if (appBarAlpha < 0.5f) Color.White else Color(0xFF14532D)
 
-    Surface(
-        color = Color.White.copy(alpha = appBarAlpha),
-        modifier = Modifier.fillMaxWidth(),
-        shadowElevation = if (appBarAlpha > 0.9f) 8.dp else 0.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .statusBarsPadding()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Surface(
+            color = Color.White.copy(alpha = appBarAlpha),
+            modifier = Modifier.fillMaxWidth(),
+            shadowElevation = if (appBarAlpha > 0.9f) 8.dp else 0.dp
         ) {
-            Surface(
-                onClick = onBack,
-                color = Color.Transparent,
-                shape = RoundedCornerShape(16.dp),
-                border = if (appBarAlpha >= 0.5f) BorderStroke(1.dp, Color(0xFFDCFCE7)) else null
+            Row(
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    onClick = onBack,
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(16.dp),
+                    border = if (appBarAlpha >= 0.5f) BorderStroke(1.dp, Color(0xFFDCFCE7)) else null
                 ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = contentColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = contentColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "BACK",
+                            color = contentColor,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 1.1.sp
+                        )
+                    }
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                AnimatedVisibility(
+                    visible = scrollState.value > 250,
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { -20 }),
+                    exit = fadeOut() + slideOutVertically(targetOffsetY = { -20 })
+                ) {
                     Text(
-                        "BACK",
-                        color = contentColor,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 1.1.sp
+                        "Advanced Mastery",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 18.sp,
+                        color = Color(0xFF14532D),
+                        modifier = Modifier.padding(end = 16.dp)
                     )
                 }
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            AnimatedVisibility(
-                visible = scrollState.value > 250,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { -20 }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { -20 })
-            ) {
-                Text(
-                    "Advanced Mastery",
-                    fontWeight = FontWeight.Black,
-                    fontSize = 18.sp,
-                    color = Color(0xFF14532D),
-                    modifier = Modifier.padding(end = 16.dp)
-                )
             }
         }
     }
