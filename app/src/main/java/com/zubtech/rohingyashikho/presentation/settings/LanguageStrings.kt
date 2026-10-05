@@ -5,60 +5,64 @@ object LanguageStrings {
         return when (language) {
             "rhg" -> when (key) {
                 // General
-                "app_name" -> "Rohingya Shikho"
-                "back" -> "𓐮𓂝𓐮𓊎𓐮𓄿𓐮"
-                "next" -> "𓄿𓐮𓆵𓏞𓐮"
-                "cancel" -> "𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "start" -> "𓐬𓆵𓏏𓐮"
-                "press_back_again" -> "𓐮𓂝𓐮𓊎𓐮𓄿𓐮 𓐮𓂝𓐮𓊎𓐮𓄿𓐮"
+                "app_name" -> "𐴌𐴟𐴇𐴝𐴥𐴚𐴒𐴙𐴝 𐴬𐴞𐴈𐴡"
+                "back" -> "𐴉𐴠𐴌𐴝"
+                "next" -> "𐴓𐴝𐴥𐴇𐴠"
+                "cancel" -> "𐴇𐴝𐴥𐴌𐴞𐴓"
+                "start" -> "𐴬𐴟𐴌𐴟"
+                "press_back_again" -> "𐴀𐴝𐴌 𐴀𐴠𐴑𐴁𐴝𐴌 𐴉𐴠𐴌𐴝 𐴃𐴞𐴉𐴡"
                 
                 // Navigation
-                "nav_home" -> "𓅒𓐮𓄿𓐮"
-                "nav_library" -> "𓎡𓐮𓏏𓐮𓄿𓐮𓅆𓐮"
-                "nav_profile" -> "𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
+                "nav_home" -> "𐴂𐴝𐴌𐴝"
+                "nav_library" -> "𐴑𐴠𐴃𐴝𐴁𐴈𐴝𐴥𐴓𐴝"
+                "nav_profile" -> "𐴉𐴡𐴌𐴉𐴝𐴞𐴓"
                 
                 // Settings Screen
-                "settings_title" -> "⚙️ 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "app_customization" -> "𓄿𓐮𓊎𓐮𓂝𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "theme_mode" -> "𓂝𓐮𓊎𓐮𓄿𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "language_selection" -> "𓄿𓐮𓆵𓏞𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "preferences" -> "𓎡𓐮𓈷𓐮𓅆𓐮𓄿𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "audio_speed" -> "𓄿𓐮𓅱𓐮𓊎𓐮𓆵𓏏𓐮 𓂝𓐮𓊎𓐮𓄿𓐮"
-                "daily_reminders" -> "𓄿𓐮𓆷𓐮𓅱𓐮𓂝𓐮"
-                "choose_theme" -> "𓂝𓐮𓊎𓐮𓄿𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "select_language" -> "𓄿𓐮𓆵𓏞𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "light_mode" -> "𓐮𓂝𓐮𓊎𓐮𓄿𓐮"
-                "dark_mode" -> "𓐮𓂝𓐮𓊎𓐮𓄿𓐮 𓐮𓂝𓐮𓊎𓐮𓄿𓐮"
-                "system_default" -> "𓐮𓂝𓐮𓊎𓐮𓄿𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "rohingya_hanifi" -> "𓅌𓐮𓊎𓐮𓆵𓏏𓐮𓆷𓐮 (Rohingya)"
+                "settings_title" -> "𐴀𐴠𐴬𐴠𐴬𐴝𐴬𐴝"
+                "app_customization" -> "𐴀𐴠𐴞𐴂𐴢 𐴬𐴝𐴥𐴬𐴝"
+                "theme_mode" -> "𐴌𐴡𐴚 𐴬𐴥𐴝𐴬𐴝"
+                "language_selection" -> "𐴅𐴟𐴁𐴝𐴥𐴚 𐴬𐴥𐴝𐴬𐴝"
+                "preferences" -> "𐴉𐴡𐴬𐴡𐴓"
+                "audio_speed" -> "𐴀𐴝𐴥𐴅𐴝 𐴬𐴥𐴝𐴬𐴝"
+                "daily_reminders" -> "𐴇𐴝𐴥𐴁𐴝𐴌 𐴬𐴥𐴝𐴬𐴝"
+                "choose_theme" -> "𐴌𐴡𐴚 𐴁𐴝𐴬𐴡"
+                "select_language" -> "𐴅𐴟𐴁𐴝𐴥𐴚 𐴁𐴝𐴬𐴡"
+                "light_mode" -> "𐴉𐴡𐴌"
+                "dark_mode" -> "𐴀𐴝𐴥𐴊𐴝𐴌"
+                "system_default" -> "𐴬𐴞𐴬𐴂𐴡𐴥𐴔"
+                "rohingya_hanifi" -> "𐴌𐴟𐴇𐴝𐴥𐴚𐴒𐴙𐴝 (𐴇𐴝𐴥𐴓𐴞𐴉𐴞)"
                 "english" -> "English"
+
+                // Admin
+                "admin_control_panel" -> "𐴀𐴠𐴊𐴔𐴞𐴓 𐴑𐴡𐴓𐴃𐴟𐴌𐴟𐴓 𐴉𐴠𐴓𐴝"
+                "admin_panel_summary" -> "𐴀𐴠𐴞𐴂𐴢 𐴀𐴝𐴥𐴌𐴟 𐴔𐴝𐴓 𐴬𐴝𐴥𐴬𐴝"
                 
                 // Home Screen
-                "welcome_back" -> "𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮 𓎡𓐮𓏏𓐮!"
-                "continue_learning" -> "𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮 𓎡𓐮𓏏𓐮"
-                "rohingya_language" -> "𓅌𓐮𓊎𓐮𓆵𓏏𓐮𓆷𓐮 𓄿𓐮𓆵𓏞𓐮"
-                "lessons_count" -> "28 𓄿𓐮𓆵𓏞𓐮"
-                "hanifi_script" -> "𓅌𓐮𓊎𓐮𓆵𓏏𓐮𓆷𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "days_streak" -> "𓂝𓐮𓊎𓐮"
-                "overall_progress" -> "𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮 𓎡𓐮𓏏𓐮"
-                "learning_path" -> "𓅒𓐮𓄿𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "foundation_mastery" -> "𓅌𓐮𓊎𓐮𓆵𓏏𓐮𓆷𓐮 𓅒𓐮𓄿𓐮"
-                "goal" -> "𓐬𓆵𓏏𓐮"
-                "level" -> "𓅒𓐮𓄿𓐮"
-                "sections" -> "𓄿𓐮𓆵𓏞𓐮"
+                "welcome_back" -> "𐴈𐴟𐴬 𐴀𐴝𐴔𐴡𐴊𐴡𐴓!"
+                "continue_learning" -> "𐴬𐴞𐴈𐴡𐴓 𐴀𐴝𐴌 𐴬𐴟𐴌𐴟 𐴒𐴡𐴌𐴡"
+                "rohingya_language" -> "𐴌𐴟𐴇𐴝𐴥𐴚𐴒𐴙𐴝 𐴅𐴟𐴁𐴝𐴥𐴚"
+                "lessons_count" -> "𐴲𐴸 𐴬𐴞𐴈𐴡𐴓"
+                "hanifi_script" -> "𐴇𐴝𐴥𐴓𐴞𐴉𐴞 𐴬𐴝𐴥𐴬𐴝"
+                "days_streak" -> "𐴊𐴞𐴓"
+                "overall_progress" -> "𐴬𐴞𐴈𐴡𐴓 𐴇𐴝𐴥𐴓"
+                "learning_path" -> "𐴬𐴞𐴈𐴡𐴓 𐴌𐴝𐴬𐴃𐴝"
+                "foundation_mastery" -> "𐴬𐴞𐴈𐴡𐴓 𐴀𐴝𐴬𐴡𐴓"
+                "goal" -> "𐴔𐴡𐴑𐴬𐴡𐴊"
+                "level" -> "𐴊𐴝𐴉𐴝"
+                "sections" -> "𐴇𐴞𐴬𐴬𐴝"
                 
                 // Levels
-                "beginner" -> "𓅒𓐮𓄿𓐮𓆵𓏏𓐮 (Beginner)"
-                "elementary" -> "𓅒𓐮𓄿𓐮𓐮𓄿𓐮"
-                "intermediate" -> "𓅒𓐮𓄿𓐮𓆵𓏏𓐮𓆷𓐮𓂝𓐮 (Intermediate)"
-                "advanced" -> "𓅒𓐮𓄿𓐮𓆵𓏏𓐮𓆷𓐮𓂝𓐮𓊎𓐮 (Advanced)"
+                "beginner" -> "𐴬𐴟𐴌𐴟 𐴒𐴡𐴌𐴞𐴥𐴓𐴠"
+                "elementary" -> "𐴔𐴝𐴬𐴝𐴔𐴝𐴬𐴞"
+                "intermediate" -> "𐴊𐴡𐴌𐴔𐴞𐴥𐴝𐴓"
+                "advanced" -> "𐴀𐴟𐴉𐴡𐴌𐴠"
                 
                 // Lesson Items
-                "script_intro" -> "𓐮𓂝𓐮𓊎𓐮𓄿𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮"
-                "consonants" -> "𓄿𓐮𓆵𓏞𓐮 𓂝𓐮𓊎𓐮𓄿𓐮"
-                "vowels" -> "𓄿𓐮𓅱𓐮𓊎𓐮𓆵𓏏𓐮"
-                "combining" -> "𓎡𓐮𓈷𓐮𓅆𓐮𓄿𓐮"
-                "numbers" -> "𓅌𓐮𓊎𓐮𓆵𓏏𓐮"
+                "script_intro" -> "𐴬𐴝𐴥𐴬𐴝 𐴬𐴞𐴈𐴡"
+                "consonants" -> "𐴇𐴝𐴥𐴌𐴟𐴉𐴢 𐴀𐴝𐴥𐴊𐴝"
+                "vowels" -> "𐴇𐴝𐴥𐴌𐴟𐴉𐴢 𐴀𐴟𐴥"
+                "combining" -> "𐴔𐴞𐴓𐴡𐴓"
+                "numbers" -> "𐴓𐴡𐴔𐴁𐴡𐴌"
                 
                 else -> key
             }
@@ -91,6 +95,10 @@ object LanguageStrings {
                 "system_default" -> "System Default"
                 "rohingya_hanifi" -> "Rohingya Hanifi"
                 "english" -> "English"
+
+                // Admin
+                "admin_control_panel" -> "Admin Control Panel"
+                "admin_panel_summary" -> "Manage app updates and content"
 
                 // Home Screen
                 "welcome_back" -> "Welcome Back!"

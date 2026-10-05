@@ -1,5 +1,8 @@
 package com.zubtech.rohingyashikho.presentation.home
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -16,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,19 +28,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zubtech.rohingyashikho.R
+import com.zubtech.rohingyashikho.domain.model.AppUpdateInfo
 import com.zubtech.rohingyashikho.presentation.settings.LanguageStrings
+import com.zubtech.rohingyashikho.presentation.admin.RichTextUtil
 
 @Composable
 fun HomeScreen(
@@ -48,7 +61,35 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val lang = uiState.appLanguage
+    val context = LocalContext.current
     
+    var showNotificationBubble by remember { mutableStateOf(false) }
+
+    val currentVersion = remember(context) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0).versionCode.toLong()
+            }
+        } catch (e: Exception) {
+            0L
+        }
+    }
+
+    val isUpdateAvailable = uiState.appUpdateInfo.version > currentVersion
+    val hasInteracted = uiState.appUpdateInfo.version <= uiState.lastInteractedNotificationVersion
+    val hasSeen = uiState.appUpdateInfo.version <= uiState.lastSeenNotificationVersion
+
+    // Auto-show bubble ONCE per version if not seen yet
+    LaunchedEffect(isUpdateAvailable, uiState.appUpdateInfo.version, uiState.lastSeenNotificationVersion) {
+        if (isUpdateAvailable && uiState.appUpdateInfo.showNotification && !hasSeen) {
+            showNotificationBubble = true
+            viewModel.markNotificationAsSeen(uiState.appUpdateInfo.version)
+        }
+    }
+
     Scaffold(
         containerColor = Color(0xFFF8FAFC)
     ) { padding ->
@@ -142,11 +183,213 @@ fun HomeScreen(
                     }
                 }
 
+                // FLOATING Dynamic Notification Bubble
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = padding.calculateTopPadding() + 92.dp)
+                        .zIndex(20f)
+                ) {
+                    AnimatedVisibility(
+                        visible = (showNotificationBubble || uiState.isUpdating) && isUpdateAvailable && !hasInteracted,
+                        enter = fadeIn(tween(400)) + scaleIn(
+                            initialScale = 0.1f,
+                            transformOrigin = TransformOrigin(0.92f, 0f),
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            )
+                        ),
+                        exit = fadeOut(tween(300)) + scaleOut(
+                            targetScale = 0.5f,
+                            transformOrigin = TransformOrigin(0.92f, 0f)
+                        )
+                    ) {
+                        NotificationUpdateBubble(
+                            info = uiState.appUpdateInfo,
+                            isUpdating = uiState.isUpdating,
+                            progress = uiState.updateProgress,
+                            onUpdateClick = {
+                                viewModel.startInAppUpdate()
+                            },
+                            onDismissClick = { showNotificationBubble = false }
+                        )
+                    }
+                }
+
+                // Header with Notification Icon
                 HomeTopBar(
                     userName = uiState.userName.ifBlank { "User" },
                     lang = lang,
-                    modifier = Modifier.align(Alignment.TopCenter)
+                    showBadge = isUpdateAvailable && !hasInteracted,
+                    onNotificationClick = {
+                        if (isUpdateAvailable) {
+                            showNotificationBubble = !showNotificationBubble
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.TopCenter).zIndex(21f)
                 )
+            }
+        }
+    }
+}
+
+class SpeechBubbleShape(
+    private val cornerRadius: Dp = 24.dp,
+    private val tipSize: Dp = 16.dp,
+    private val tipOffset: Dp = 46.dp 
+) : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+        val tipSizePx = with(density) { tipSize.toPx() }
+        val tipOffsetPx = with(density) { tipOffset.toPx() }
+        val radiusPx = with(density) { cornerRadius.toPx() }
+
+        val path = Path().apply {
+            addRoundRect(
+                RoundRect(
+                    rect = Rect(0f, tipSizePx, size.width, size.height),
+                    topLeft = CornerRadius(radiusPx),
+                    topRight = CornerRadius(radiusPx),
+                    bottomRight = CornerRadius(radiusPx),
+                    bottomLeft = CornerRadius(radiusPx)
+                )
+            )
+            moveTo(size.width - tipOffsetPx - (tipSizePx / 1.1f), tipSizePx)
+            lineTo(size.width - tipOffsetPx, 0f)
+            lineTo(size.width - tipOffsetPx + (tipSizePx / 1.1f), tipSizePx)
+            close()
+        }
+        return Outline.Generic(path)
+    }
+}
+
+@Composable
+fun NotificationUpdateBubble(
+    info: AppUpdateInfo,
+    isUpdating: Boolean,
+    progress: Float,
+    onUpdateClick: () -> Unit,
+    onDismissClick: () -> Unit
+) {
+    val themeColor = if (info.highlightColor == 0L) 0xFF4F46E5 else info.highlightColor
+    val textColor = if (info.textColor == 0L) 0xFF1E293B else info.textColor
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 32.dp, 
+                    shape = SpeechBubbleShape(), 
+                    spotColor = Color(themeColor).copy(alpha = 0.5f)
+                ),
+            color = Color.White,
+            shape = SpeechBubbleShape(),
+            border = BorderStroke(2.dp, Color(themeColor).copy(alpha = 0.8f))
+        ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    Icons.Rounded.RocketLaunch,
+                    contentDescription = null,
+                    tint = Color(themeColor).copy(alpha = 0.05f),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .size(110.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .padding(top = 36.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
+                ) {
+                    Text(
+                        text = if (isUpdating) "Updating..." else "New Message",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 20.sp,
+                        color = Color(textColor)
+                    )
+                    
+                    Spacer(Modifier.height(14.dp))
+                    
+                    if (isUpdating) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Downloading updates, please wait...",
+                                color = Color(textColor).copy(alpha = 0.7f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            LinearProgressIndicator(
+                                progress = { progress },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(10.dp)
+                                    .clip(CircleShape),
+                                color = Color(themeColor),
+                                trackColor = Color(themeColor).copy(alpha = 0.1f),
+                                strokeCap = StrokeCap.Round
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = "${(progress * 100).toInt()}%",
+                                modifier = Modifier.align(Alignment.End),
+                                color = Color(themeColor),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = RichTextUtil.fromHtml(info.message),
+                            color = Color(textColor).copy(alpha = 0.85f),
+                            fontSize = info.fontSize.sp,
+                            fontWeight = if (info.isBold) FontWeight.Bold else FontWeight.Medium,
+                            fontStyle = if (info.isItalic) FontStyle.Italic else FontStyle.Normal,
+                            lineHeight = 24.sp
+                        )
+                    }
+
+                    Spacer(Modifier.height(30.dp))
+
+                    if (!isUpdating) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = onDismissClick,
+                                modifier = Modifier.weight(1f).height(50.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(2.dp, Color(themeColor).copy(alpha = 0.4f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(textColor).copy(alpha = 0.7f))
+                            ) {
+                                Text("Later", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            }
+                            
+                            Button(
+                                onClick = onUpdateClick,
+                                modifier = Modifier.weight(1f).height(50.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(themeColor),
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp)
+                            ) {
+                                Text("Action", fontWeight = FontWeight.Black, fontSize = 16.sp)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -156,6 +399,8 @@ fun HomeScreen(
 fun HomeTopBar(
     userName: String,
     lang: String,
+    showBadge: Boolean,
+    onNotificationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val shiningHeaderBorder = Brush.linearGradient(
@@ -219,17 +464,27 @@ fun HomeTopBar(
             }
 
             Surface(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(44.dp).clickable { onNotificationClick() },
                 shape = CircleShape,
-                color = Color(0xFFF1F5F9)
+                color = if (showBadge) Color(0xFFEEF2FF) else Color(0xFFF1F5F9)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        Icons.Rounded.NotificationsNone,
+                        if (showBadge) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationsNone,
                         contentDescription = null,
-                        tint = Color(0xFF1E293B),
+                        tint = if (showBadge) Color(0xFF4F46E5) else Color(0xFF1E293B),
                         modifier = Modifier.size(24.dp)
                     )
+                    if (showBadge) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(top = 10.dp, end = 10.dp)
+                                .size(10.dp)
+                                .background(Color.Red, CircleShape)
+                                .border(1.5.dp, Color.White, CircleShape)
+                        )
+                    }
                 }
             }
         }
@@ -427,7 +682,6 @@ fun LevelCard(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Beauty: Increased Big size icon surface with soft background
             Surface(
                 color = accentColor.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(24.dp),

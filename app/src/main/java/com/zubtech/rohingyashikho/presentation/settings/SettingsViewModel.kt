@@ -6,6 +6,7 @@ import com.zubtech.rohingyashikho.data.local.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,6 +21,13 @@ class SettingsViewModel @Inject constructor(
 
     val appLanguage: StateFlow<String> = userPreferences.appLanguage
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "en")
+
+    val isAdmin: StateFlow<Boolean> = combine(
+        userPreferences.userName,
+        userPreferences.userAge
+    ) { name, age ->
+        name?.trim() == "RohingyaShikhoZubairAdmin" && age?.trim() == "2026"
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun setThemeMode(mode: String) {
         viewModelScope.launch {

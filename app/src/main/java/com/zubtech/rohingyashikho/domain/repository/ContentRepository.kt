@@ -1,5 +1,6 @@
 package com.zubtech.rohingyashikho.domain.repository
 
+import com.zubtech.rohingyashikho.domain.model.AppUpdateInfo
 import com.zubtech.rohingyashikho.domain.model.Course
 import com.zubtech.rohingyashikho.domain.model.Lesson
 import com.zubtech.rohingyashikho.domain.model.LessonItem
@@ -14,4 +15,8 @@ interface ContentRepository {
     fun getVowels(): Flow<List<LessonItem>>
     fun getNumbers(): Flow<List<LessonItem>>
     fun getConsonantsForWriting(): Flow<List<LessonItem>>
+    
+    // App Update & Notifications
+    fun getAppUpdateInfo(): Flow<AppUpdateInfo>
+    suspend fun updateAppInfo(info: AppUpdateInfo)
 }

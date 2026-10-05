@@ -9,5 +9,4 @@
   { "id": "v8", "scriptText": "◌𐴥", "transliteration": "Tela", "englishMeaning": "Tone 2", "audioFileRef": "audio/vowels/tahala.mp3" },
   { "id": "v9", "scriptText": "◌𐴦", "transliteration": "Tana", "englishMeaning": "Tone 3", "audioFileRef": "audio/vowels/tana.mp3" },
   { "id": "v10", "scriptText": "◌𐴧", "transliteration": "Tossi", "englishMeaning": "Gemination mark", "audioFileRef": "audio/vowels/tassi.mp3" }
-
 ]

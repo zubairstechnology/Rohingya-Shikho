@@ -171,7 +171,10 @@ fun AlphabetCombinationScreen(
                                 selected = isSelected,
                                 onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                                 text = {
-                                    val cleanVowelText = vowel.scriptText.replace("◌", "").replace("𐴀", "")
+                                    val cleanVowelText = vowel.scriptText
+                                        .replace("◌", "")
+                                        .replace("𐴀", "")
+                                        .replace("𐴢", "")
                                     Text(
                                         text = cleanVowelText,
                                         fontSize = if (isSelected) 34.sp else 24.sp,
@@ -275,7 +278,10 @@ fun VowelHeroCard(vowel: LessonItem, color: Color) {
                     color = Color.White.copy(alpha = 0.25f)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        val cleanVowelText = vowel.scriptText.replace("◌", "").replace("𐴀", "")
+                        val cleanVowelText = vowel.scriptText
+                            .replace("◌", "")
+                            .replace("𐴀", "")
+                            .replace("𐴢", "")
                         Text(
                             cleanVowelText,
                             color = Color.White,
@@ -405,20 +411,22 @@ fun ModernLuxuryCombinationCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Robust cleaning logic for ALL characters including dda, ka, na, rra, sha, nga
-            val harbahayMark = "𐴢"
+            val sakinSign = "𐴢"
             val dottedCircle = "◌"
             val carrierA = "𐴀"
             
-            val cleanConsonant = consonant.scriptText.replace(harbahayMark, "").trim()
+            // Extract base consonant by removing any existing sakin to avoid double sakin
+            val baseConsonant = consonant.scriptText.replace(sakinSign, "").trim()
+            
+            // Extract clean vowel
             val cleanVowel = vowel.scriptText
                 .replace(dottedCircle, "")
                 .replace(carrierA, "")
-                .replace(harbahayMark, "")
+                .replace(sakinSign, "")
                 .trim()
             
             Text(
-                text = "${cleanConsonant}${cleanVowel}",
+                text = "${baseConsonant}${cleanVowel}",
                 fontSize = 42.sp,
                 fontWeight = FontWeight.Black,
                 color = Color(0xFF1E293B),

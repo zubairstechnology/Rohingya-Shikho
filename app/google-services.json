@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "939438689285",
+    "project_id": "rohingya-shikho",
+    "storage_bucket": "rohingya-shikho.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:939438689285:android:c2566a7e2471b8bd94206c",
+        "android_client_info": {
+          "package_name": "com.zubtech.rohingyashikho"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXTErRJaWLSTMB86aL2LSZVZ_gfnVSKGE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.AdminPanelSettings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,10 +31,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToAdmin: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
     val appLanguage by viewModel.appLanguage.collectAsState()
+    val isAdmin by viewModel.isAdmin.collectAsState()
     
     var showThemeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -50,7 +53,7 @@ fun SettingsScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = if (appLanguage == "rhg") "⚙️ 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮" else "Settings",
+                        text = LanguageStrings.getText("settings_title", appLanguage),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
@@ -69,7 +72,7 @@ fun SettingsScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = LanguageStrings.getText("back", appLanguage),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -98,7 +101,7 @@ fun SettingsScreen(
                 ProfileSettingsHeader()
 
                 // Settings Section - General Settings
-                SettingsSectionTitle(title = if (appLanguage == "rhg") "𓄿𓐮𓊎𓐮𓂝𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮" else "App Customization")
+                SettingsSectionTitle(title = LanguageStrings.getText("app_customization", appLanguage))
 
                 SettingsCardItem(
                     icon = when (themeMode) {
@@ -107,11 +110,11 @@ fun SettingsScreen(
                         else -> Icons.Default.SettingsSuggest
                     },
                     iconBgColor = Color(0xFF6366F1),
-                    title = if (appLanguage == "rhg") "𓂝𓐮𓊎𓐮𓄿𓐮" else "Theme Mode",
+                    title = LanguageStrings.getText("theme_mode", appLanguage),
                     summary = when (themeMode) {
-                        "dark" -> "Dark Mode"
-                        "light" -> "Light Mode"
-                        else -> "System Default"
+                        "dark" -> LanguageStrings.getText("dark_mode", appLanguage)
+                        "light" -> LanguageStrings.getText("light_mode", appLanguage)
+                        else -> LanguageStrings.getText("system_default", appLanguage)
                     },
                     onClick = { showThemeDialog = true }
                 )
@@ -119,18 +122,18 @@ fun SettingsScreen(
                 SettingsCardItem(
                     icon = Icons.Default.Language,
                     iconBgColor = Color(0xFF00ACC1),
-                    title = if (appLanguage == "rhg") "𓄿𓐮𓆵𓏞𓐮" else "Language / 𓄿𓐮𓆵𓏞𓐮",
-                    summary = if (appLanguage == "rhg") "𓅌𓐮𓊎𓐮𓆵𓏏𓐮𓆷𓐮 (Rohingya)" else "English",
+                    title = LanguageStrings.getText("language_selection", appLanguage),
+                    summary = if (appLanguage == "rhg") LanguageStrings.getText("rohingya_hanifi", appLanguage) else LanguageStrings.getText("english", appLanguage),
                     onClick = { showLanguageDialog = true }
                 )
 
                 // Settings Section - Additional Settings
-                SettingsSectionTitle(title = if (appLanguage == "rhg") "𓎡𓐮𓈷𓐮𓅆𓐮𓄿𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮" else "Preferences")
+                SettingsSectionTitle(title = LanguageStrings.getText("preferences", appLanguage))
 
                 SettingsCardItem(
                     icon = Icons.Default.Speed,
                     iconBgColor = Color(0xFFEC4899),
-                    title = if (appLanguage == "rhg") "𓄿𓐮𓅱𓐮𓊎𓐮𓆵𓏏𓐮 𓂝𓐮𓊎𓐮𓄿𓐮" else "Audio Playback Speed",
+                    title = LanguageStrings.getText("audio_speed", appLanguage),
                     summary = "Normal",
                     onClick = { /* Future Implementation */ }
                 )
@@ -138,10 +141,20 @@ fun SettingsScreen(
                 SettingsCardItem(
                     icon = Icons.Default.Notifications,
                     iconBgColor = Color(0xFFA855F7),
-                    title = if (appLanguage == "rhg") "𓄿𓐮𓆷𓐮𓅱𓐮𓂝𓐮" else "Daily Reminders",
+                    title = LanguageStrings.getText("daily_reminders", appLanguage),
                     summary = "On - 8:00 PM",
                     onClick = { /* Future Implementation */ }
                 )
+
+                if (isAdmin) {
+                    SettingsCardItem(
+                        icon = Icons.Rounded.AdminPanelSettings,
+                        iconBgColor = Color(0xFFEF4444),
+                        title = LanguageStrings.getText("admin_control_panel", appLanguage),
+                        summary = LanguageStrings.getText("admin_panel_summary", appLanguage),
+                        onClick = onNavigateToAdmin
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -163,10 +176,14 @@ fun SettingsScreen(
     if (showThemeDialog) {
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
-            title = { Text(if (appLanguage == "rhg") "𓂝𓐮𓊎𓐮𓄿𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮" else "Choose Theme Mode") },
+            title = { Text(LanguageStrings.getText("choose_theme", appLanguage)) },
             text = {
                 Column {
-                    listOf("light" to "Light Mode", "dark" to "Dark Mode", "system" to "System Default").forEach { (mode, label) ->
+                    listOf(
+                        "light" to LanguageStrings.getText("light_mode", appLanguage),
+                        "dark" to LanguageStrings.getText("dark_mode", appLanguage),
+                        "system" to LanguageStrings.getText("system_default", appLanguage)
+                    ).forEach { (mode, label) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -189,7 +206,7 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showThemeDialog = false }) {
-                    Text("Cancel")
+                    Text(LanguageStrings.getText("cancel", appLanguage))
                 }
             },
             shape = RoundedCornerShape(24.dp)
@@ -200,10 +217,13 @@ fun SettingsScreen(
     if (showLanguageDialog) {
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
-            title = { Text(if (appLanguage == "rhg") "𓄿𓐮𓆵𓏞𓐮 𓐬𓆵𓏏𓐮𓄿𓆵𓏏𓐮" else "Select Language") },
+            title = { Text(LanguageStrings.getText("select_language", appLanguage)) },
             text = {
                 Column {
-                    listOf("en" to "English", "rhg" to "𓅌𓐮𓊎𓐮𓆵𓏏𓐮𓆷𓐮 (Rohingya Hanifi)").forEach { (lang, label) ->
+                    listOf(
+                        "en" to LanguageStrings.getText("english", appLanguage),
+                        "rhg" to LanguageStrings.getText("rohingya_hanifi", appLanguage)
+                    ).forEach { (lang, label) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -226,7 +246,7 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showLanguageDialog = false }) {
-                    Text("Cancel")
+                    Text(LanguageStrings.getText("cancel", appLanguage))
                 }
             },
             shape = RoundedCornerShape(24.dp)

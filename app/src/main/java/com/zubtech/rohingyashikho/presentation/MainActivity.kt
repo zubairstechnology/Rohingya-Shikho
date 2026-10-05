@@ -1,12 +1,14 @@
 package com.zubtech.rohingyashikho.presentation
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -40,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -47,25 +50,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.zubtech.rohingyashikho.presentation.alphabet.AlphabetReferenceScreen
-import com.zubtech.rohingyashikho.presentation.alphabet.AlphabetCombinationScreen
-import com.zubtech.rohingyashikho.presentation.alphabet.ConsonantsScreen
-import com.zubtech.rohingyashikho.presentation.alphabet.PdfViewerScreen
-import com.zubtech.rohingyashikho.presentation.alphabet.VowelsScreen
-import com.zubtech.rohingyashikho.presentation.alphabet.NumbersScreen
-import com.zubtech.rohingyashikho.presentation.alphabet.WritingPracticeScreen
-import com.zubtech.rohingyashikho.presentation.alphabet.GrammarScreen
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.InstallStateUpdatedListener
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.UpdateAvailability
+import com.zubtech.rohingyashikho.R
+import com.zubtech.rohingyashikho.data.local.UserPreferences
+import com.zubtech.rohingyashikho.presentation.admin.AdminScreen
+import com.zubtech.rohingyashikho.presentation.alphabet.*
 import com.zubtech.rohingyashikho.presentation.drawing.DrawingScreen
 import com.zubtech.rohingyashikho.presentation.home.HomeScreen
-import com.zubtech.rohingyashikho.presentation.level.LevelDetailScreen
-import com.zubtech.rohingyashikho.presentation.level.HanifiIntroScreen
-import com.zubtech.rohingyashikho.presentation.level.AdvancedIntroScreen
-import com.zubtech.rohingyashikho.presentation.level.WordBuildingScreen
-import com.zubtech.rohingyashikho.presentation.level.AdvancedVocabularyScreen
-import com.zubtech.rohingyashikho.presentation.level.ConversationScreen
 import com.zubtech.rohingyashikho.presentation.lesson.LessonScreen
 import com.zubtech.rohingyashikho.presentation.library.LibraryScreen
 import com.zubtech.rohingyashikho.presentation.navigation.Screen
+import com.zubtech.rohingyashikho.presentation.level.*
 import com.zubtech.rohingyashikho.presentation.onboarding.AgeInputScreen
 import com.zubtech.rohingyashikho.presentation.onboarding.NameInputScreen
 import com.zubtech.rohingyashikho.presentation.onboarding.OnboardingScreen
@@ -73,17 +74,14 @@ import com.zubtech.rohingyashikho.presentation.onboarding.OnboardingViewModel
 import com.zubtech.rohingyashikho.presentation.progress.ProgressScreen
 import com.zubtech.rohingyashikho.presentation.quiz.QuizScreen
 import com.zubtech.rohingyashikho.presentation.review.ReviewScreen
+import com.zubtech.rohingyashikho.presentation.settings.LanguageStrings
 import com.zubtech.rohingyashikho.presentation.settings.SettingsScreen
 import com.zubtech.rohingyashikho.presentation.splash.SplashScreen
-import com.zubtech.rohingyashikho.presentation.ui.theme.AppBackground
 import com.zubtech.rohingyashikho.presentation.ui.theme.RohingyaShikhoTheme
-import com.zubtech.rohingyashikho.data.local.UserPreferences
-import com.zubtech.rohingyashikho.presentation.settings.LanguageStrings
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
-import com.zubtech.rohingyashikho.R
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -92,8 +90,18 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var userPreferences: UserPreferences
 
+    private lateinit var appUpdateManager: AppUpdateManager
+    private val updateType = AppUpdateType.FLEXIBLE // Can be IMMEDIATE for forced updates
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        if (updateType == AppUpdateType.FLEXIBLE) {
+            appUpdateManager.registerListener(installStateUpdatedListener)
+        }
+        checkForAppUpdate()
+
         enableEdgeToEdge()
         setContent {
             val themeMode by userPreferences.themeMode.collectAsState(initial = "system")
@@ -115,6 +123,70 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private val installStateUpdatedListener = InstallStateUpdatedListener { state ->
+        if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            Toast.makeText(
+                applicationContext,
+                "Download successful. Restarting app in 5 seconds.",
+                Toast.LENGTH_LONG
+            ).show()
+            lifecycleScope.launch {
+                delay(5000)
+                appUpdateManager.completeUpdate()
+            }
+        }
+    }
+
+    private fun checkForAppUpdate() {
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
+            val isUpdateAvailable = info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+            val isUpdateAllowed = when (updateType) {
+                AppUpdateType.FLEXIBLE -> info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+                AppUpdateType.IMMEDIATE -> info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+                else -> false
+            }
+
+            if (isUpdateAvailable && isUpdateAllowed) {
+                appUpdateManager.startUpdateFlowForResult(
+                    info,
+                    updateResultLauncher,
+                    AppUpdateOptions.newBuilder(updateType).build()
+                )
+            }
+        }
+    }
+
+    private val updateResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != RESULT_OK) {
+            // If the update is cancelled or fails, you can handle it here
+            Toast.makeText(this, "Update failed or cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (updateType == AppUpdateType.IMMEDIATE) {
+            appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
+                if (info.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                    appUpdateManager.startUpdateFlowForResult(
+                        info,
+                        updateResultLauncher,
+                        AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+                    )
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (updateType == AppUpdateType.FLEXIBLE) {
+            appUpdateManager.unregisterListener(installStateUpdatedListener)
+        }
+    }
 }
 
 @Composable
@@ -134,7 +206,6 @@ fun RohingyaAppNavigation(appLanguage: String) {
         Screen.Progress.route
     )
 
-    // Double back click to exit app implementation when on a main root screen
     if (mainDestinations.contains(currentDestination?.route)) {
         BackHandler {
             if (backPressedOnce) {
@@ -204,7 +275,15 @@ fun RohingyaAppNavigation(appLanguage: String) {
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.NameInput.route) { inclusive = true }
                             }
+                        },
+                        onAdminPanelClick = {
+                            navController.navigate(Screen.Admin.route)
                         }
+                    )
+                }
+                composable(Screen.Admin.route) {
+                    AdminScreen(
+                        onNavigateBack = { navController.popBackStack() }
                     )
                 }
                 composable(Screen.Home.route) {
@@ -463,7 +542,8 @@ fun RohingyaAppNavigation(appLanguage: String) {
                 }
                 composable(Screen.Settings.route) {
                     SettingsScreen(
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToAdmin = { navController.navigate(Screen.Admin.route) }
                     )
                 }
             }

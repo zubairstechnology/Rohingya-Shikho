@@ -41,4 +41,5 @@ sealed class Screen(val route: String) {
     object WordBuilding : Screen("word_building")
     object AdvancedVocabulary : Screen("advanced_vocabulary")
     object Conversation : Screen("conversation")
+    object Admin : Screen("admin")
 }

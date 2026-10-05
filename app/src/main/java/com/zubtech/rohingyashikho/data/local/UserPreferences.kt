@@ -22,6 +22,8 @@ class UserPreferences @Inject constructor(
     private val KEY_USER_AGE = stringPreferencesKey("user_age")
     private val KEY_THEME_MODE = stringPreferencesKey("theme_mode") // "light", "dark", "system"
     private val KEY_LANGUAGE = stringPreferencesKey("app_language") // "en", "rhg"
+    private val KEY_LAST_INTERACTED_NOTIFICATION_VERSION = intPreferencesKey("last_interacted_notification_version")
+    private val KEY_LAST_SEEN_NOTIFICATION_VERSION = intPreferencesKey("last_seen_notification_version")
 
     val onboardingCompleted: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
@@ -31,6 +33,11 @@ class UserPreferences @Inject constructor(
     val userName: Flow<String?> = context.dataStore.data
         .map { preferences ->
             preferences[KEY_USER_NAME]
+        }
+
+    val userAge: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[KEY_USER_AGE]
         }
         
     val themeMode: Flow<String> = context.dataStore.data
@@ -43,11 +50,34 @@ class UserPreferences @Inject constructor(
             preferences[KEY_LANGUAGE] ?: "en"
         }
 
+    val lastInteractedNotificationVersion: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[KEY_LAST_INTERACTED_NOTIFICATION_VERSION] ?: 0
+        }
+
+    val lastSeenNotificationVersion: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[KEY_LAST_SEEN_NOTIFICATION_VERSION] ?: 0
+        }
+
     suspend fun saveUserProfile(name: String, age: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_USER_NAME] = name
             preferences[KEY_USER_AGE] = age
             preferences[KEY_ONBOARDING_COMPLETED] = true
+        }
+    }
+
+    suspend fun saveCredentials(name: String, age: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_USER_NAME] = name
+            preferences[KEY_USER_AGE] = age
+        }
+    }
+
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_ONBOARDING_COMPLETED] = completed
         }
     }
 
@@ -60,6 +90,18 @@ class UserPreferences @Inject constructor(
     suspend fun setLanguage(language: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_LANGUAGE] = language
+        }
+    }
+
+    suspend fun setLastInteractedNotificationVersion(version: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_LAST_INTERACTED_NOTIFICATION_VERSION] = version
+        }
+    }
+
+    suspend fun setLastSeenNotificationVersion(version: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_LAST_SEEN_NOTIFICATION_VERSION] = version
         }
     }
 

@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.rounded.AdminPanelSettings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,10 +32,12 @@ import com.zubtech.rohingyashikho.presentation.ui.theme.AppPrimary
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
-    onStartLearning: () -> Unit
+    onStartLearning: () -> Unit,
+    onAdminPanelClick: () -> Unit = {}
 ) {
     var isVisible by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val isAdmin by viewModel.isAdmin.collectAsState()
 
     // Floating and Pulse animation for every_day.png
     val infiniteTransition = rememberInfiniteTransition(label = "hero_animation")
@@ -129,38 +132,52 @@ fun OnboardingScreen(
                 visible = isVisible,
                 enter = fadeIn(tween(1200, 800)) + slideInHorizontally(tween(1200, 800)) { 40 }
             ) {
-                Button(
-                    onClick = {
-                        viewModel.completeOnboarding(onStartLearning)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(68.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = AppPrimary),
-                    shape = RoundedCornerShape(34.dp),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 8.dp,
-                        pressedElevation = 2.dp
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Button(
+                        onClick = {
+                            viewModel.completeOnboarding(onStartLearning)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(68.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AppPrimary),
+                        shape = RoundedCornerShape(34.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 8.dp,
+                            pressedElevation = 2.dp
+                        )
                     ) {
-                        Text(
-                            text = "Start Your Journey",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Start Your Journey",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+
+                    if (isAdmin) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        TextButton(
+                            onClick = onAdminPanelClick,
+                            colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFEF4444))
+                        ) {
+                            Icon(Icons.Rounded.AdminPanelSettings, null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("ACCESS ADMIN PANEL", fontWeight = FontWeight.Black)
+                        }
                     }
                 }
             }
