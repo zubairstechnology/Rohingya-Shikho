@@ -82,6 +82,7 @@ fun VowelsScreen(
         QuizVictoryDialog(
             score = quizScore,
             total = vowels.size,
+            medal = userStats.vowelMedal,
             onDismiss = {
                 showVictoryDialog = false
                 selectedMode = "Vowel"

@@ -76,6 +76,7 @@ fun NumbersScreen(
         QuizVictoryDialog(
             score = quizScore,
             total = numbers.size,
+            medal = userStats.numberMedal,
             onDismiss = {
                 showVictoryDialog = false
                 selectedMode = "Number"

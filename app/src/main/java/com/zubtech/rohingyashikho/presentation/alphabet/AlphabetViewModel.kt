@@ -266,16 +266,29 @@ class AlphabetViewModel @Inject constructor(
         }
     }
 
+    private fun calculateMedal(score: Int, total: Int): Int {
+        val incorrect = total - score
+        return when {
+            score == total -> 3 // Gold
+            incorrect < 5 -> 2  // Silver
+            incorrect < 7 -> 1  // Bronze
+            else -> 0
+        }
+    }
+
     fun completeConsonantLevel(score: Int) {
         viewModelScope.launch {
             val currentStats = userStats.value
-            val totalCons = if (consonants.value.isNotEmpty()) consonants.value.size.toFloat() else 28f
-            val quizProgress = (score.toFloat() / totalCons).coerceAtMost(1f)
+            val totalCons = if (consonants.value.isNotEmpty()) consonants.value.size else 28
+            val quizProgress = (score.toFloat() / totalCons.toFloat()).coerceAtMost(1f)
+            val newMedal = calculateMedal(score, totalCons)
+            
             progressDao.updateUserStats(
                 currentStats.copy(
                     quizProgress = quizProgress,
                     levelsPassed = currentStats.levelsPassed.coerceAtLeast(1),
-                    totalPoints = currentStats.totalPoints + (score * 10)
+                    totalPoints = currentStats.totalPoints + (score * 10),
+                    consonantMedal = newMedal.coerceAtLeast(currentStats.consonantMedal)
                 )
             )
         }
@@ -288,11 +301,14 @@ class AlphabetViewModel @Inject constructor(
             if (totalVowels == 0) return@launch
             
             val quizProgress = (score.toFloat() / totalVowels.toFloat()).coerceAtMost(1f)
+            val newMedal = calculateMedal(score, totalVowels)
+
             progressDao.updateUserStats(
                 currentStats.copy(
                     vowelQuizProgress = quizProgress,
                     levelsPassed = currentStats.levelsPassed.coerceAtLeast(2),
-                    totalPoints = currentStats.totalPoints + (score * 15)
+                    totalPoints = currentStats.totalPoints + (score * 15),
+                    vowelMedal = newMedal.coerceAtLeast(currentStats.vowelMedal)
                 )
             )
         }
@@ -305,11 +321,14 @@ class AlphabetViewModel @Inject constructor(
             if (totalNum == 0) return@launch
             
             val quizProgress = (score.toFloat() / totalNum.toFloat()).coerceAtMost(1f)
+            val newMedal = calculateMedal(score, totalNum)
+
             progressDao.updateUserStats(
                 currentStats.copy(
                     numberQuizProgress = quizProgress,
                     levelsPassed = currentStats.levelsPassed.coerceAtLeast(3),
-                    totalPoints = currentStats.totalPoints + (score * 20)
+                    totalPoints = currentStats.totalPoints + (score * 20),
+                    numberMedal = newMedal.coerceAtLeast(currentStats.numberMedal)
                 )
             )
         }

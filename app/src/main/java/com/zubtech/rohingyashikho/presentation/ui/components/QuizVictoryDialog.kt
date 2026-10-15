@@ -30,6 +30,7 @@ import com.zubtech.rohingyashikho.R
 fun QuizVictoryDialog(
     score: Int,
     total: Int,
+    medal: Int = 0, // 0: None, 1: Bronze, 2: Silver, 3: Gold
     onDismiss: () -> Unit
 ) {
     var animateTrigger by remember { mutableStateOf(false) }
@@ -50,6 +51,13 @@ fun QuizVictoryDialog(
         incorrectCount < 5 -> Triple("EXCELLENT EFFORT!", Color(0xFF16A34A), Color(0xFFDCFCE7))
         incorrectCount < 7 -> Triple("GOOD EFFORT!", Color(0xFF2563EB), Color(0xFFDBEAFE))
         else -> Triple("KEEP LEARNING!", Color(0xFFDC2626), Color(0xFFFEE2E2))
+    }
+
+    val medalInfo = when(medal) {
+        3 -> Pair("GOLD MEDAL", Color(0xFFFFD700))
+        2 -> Pair("SILVER MEDAL", Color(0xFFC0C0C0))
+        1 -> Pair("BRONZE MEDAL", Color(0xFFCD7F32))
+        else -> null
     }
 
     Dialog(
@@ -114,6 +122,35 @@ fun QuizVictoryDialog(
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
+
+                // Medal Badge
+                if (medalInfo != null) {
+                    Surface(
+                        color = medalInfo.second.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, medalInfo.second),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                Icons.Rounded.EmojiEvents,
+                                contentDescription = null,
+                                tint = medalInfo.second,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = medalInfo.first,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black,
+                                color = medalInfo.second
+                            )
+                        }
+                    }
+                }
 
                 // Dynamic Status Badge
                 Row(
