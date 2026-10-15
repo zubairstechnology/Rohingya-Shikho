@@ -38,5 +38,8 @@ data class UserStatsEntity(
     val vowelRecognitionProgress: Float = 0f,
     val vowelQuizProgress: Float = 0f,
     val numberRecognitionProgress: Float = 0f,
-    val numberQuizProgress: Float = 0f
+    val numberQuizProgress: Float = 0f,
+    val consonantMedal: Int = 0, // 0: None, 1: Bronze, 2: Silver, 3: Gold
+    val vowelMedal: Int = 0,
+    val numberMedal: Int = 0
 )
