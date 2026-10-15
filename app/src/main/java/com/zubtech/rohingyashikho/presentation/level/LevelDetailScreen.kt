@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -132,7 +133,6 @@ fun LevelDetailScreen(
                             contentPadding = PaddingValues(bottom = 100.dp, top = 32.dp, start = 20.dp, end = 20.dp)
                         ) {
                             item {
-                                // Explicitly using androidx.compose.animation.AnimatedVisibility to avoid ambiguity with ColumnScope.AnimatedVisibility
                                 androidx.compose.animation.AnimatedVisibility(
                                     visible = visible,
                                     enter = slideInVertically { 30 } + fadeIn(tween(800, 200))
@@ -186,10 +186,14 @@ fun LevelDetailScreen(
 }
 
 @Composable
-fun DetailedLessonCard(lesson: MockLesson, index: Int, total: Int, onSelected: (String) -> Unit) {
+fun DetailedLessonCard(
+    lesson: MockLesson, 
+    index: Int, 
+    total: Int, 
+    onSelected: (String) -> Unit
+) {
     val lessonGradient = getLessonGradient(index)
     
-    // Dashed line connector logic
     Box(modifier = Modifier.fillMaxWidth().drawBehind {
         if (index < total - 1) {
             drawLine(
@@ -270,7 +274,6 @@ fun LevelDetailHero(levelId: String, levelTag: String, levelTitle: String, onBac
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, null, tint = Color.White, modifier = Modifier.size(26.dp))
                     }
                     
-                    // Polished Circular Progress Indicator
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.size(92.dp).background(brush = Brush.radialGradient(colors = listOf(Color.White.copy(alpha = 0.25f), Color.White.copy(alpha = 0.05f))), shape = CircleShape).border(1.5.dp, Color.White.copy(alpha = 0.3f), CircleShape).shadow(8.dp, CircleShape, clip = false, spotColor = Color.White.copy(alpha = 0.25f))
@@ -379,10 +382,16 @@ private fun illustrationRes(levelId: String): Int = when (levelId) {
     else -> R.drawable.beginner
 }
 
-data class MockLesson(val id: String, val title: String, val description: String, val icon: ImageVector, val accentColor: Color)
+data class MockLesson(
+    val id: String, 
+    val title: String, 
+    val description: String, 
+    val icon: ImageVector, 
+    val accentColor: Color
+)
 
 val mockBeginnerLessons = listOf(
-    MockLesson("1", "Script Intro", "Visual overview of system.", Icons.Rounded.AutoStories, Color(0xFF6366F1)),
+    MockLesson("1", "Script Introduction", "Visual overview of system.", Icons.Rounded.AutoStories, Color(0xFF6366F1)),
     MockLesson("2", "Consonants", "Learn 28 characters.", Icons.Rounded.GridView, Color(0xFFF43F5E)),
     MockLesson("3", "Vowels", "Sign usage & sounds.", Icons.Rounded.Category, Color(0xFF10B981)),
     MockLesson("4", "Combining", "Flow and Script Rules.", Icons.Rounded.AutoAwesome, Color(0xFF3B82F6)),
@@ -391,7 +400,7 @@ val mockBeginnerLessons = listOf(
 
 val mockIntermediateLessons = listOf(
     MockLesson("1", "Writing Practice", "Master script writing.", Icons.Rounded.Create, Color(0xFF0F766E)),
-    MockLesson("2", "Grammar Rules", "Foundation of sentences.", Icons.Rounded.Class, Color(0xFFEC4899)),
+    MockLesson("2", "Basic Grammar", "Foundation of sentences.", Icons.Rounded.Class, Color(0xFFEC4899)),
     MockLesson("3", "Word Building", "Construct complex words.", Icons.Rounded.Extension, Color(0xFF8B5CF6))
 )
 

@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zubtech.rohingyashikho.domain.model.LessonItem
+import com.zubtech.rohingyashikho.presentation.ui.components.GrammarPulseIndicator
 
 enum class AlphabetTab { CONSONANTS, VOWELS }
 
@@ -164,6 +166,9 @@ fun AlphabetReferenceScreen(
                             label = "TabTransition"
                         ) { tab ->
                             val currentItems = if (tab == AlphabetTab.CONSONANTS) consonants else vowels
+                            val playingItemId by viewModel.playingItemId.collectAsState()
+                            val isAudioPlaying by viewModel.isAudioPlaying.collectAsState()
+
                             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                                 LazyVerticalGrid(
                                     columns = GridCells.Fixed(4),
@@ -173,11 +178,20 @@ fun AlphabetReferenceScreen(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
                                     itemsIndexed(currentItems) { index, item ->
+                                        val isItemPlaying = isAudioPlaying && playingItemId == item.id
                                         AnimatedAlphabetItemReference(
                                             item = item, 
                                             index = index,
+                                            isPlaying = isItemPlaying,
                                             clickCount = clickCounts[item.id] ?: 0,
-                                            onClick = { viewModel.playAudio(item) }
+                                            onClick = { 
+                                                viewModel.playAudio(item)
+                                                if (selectedTab == AlphabetTab.CONSONANTS) {
+                                                    viewModel.recordClick(item.id)
+                                                } else {
+                                                    viewModel.recordVowelClick(item.id)
+                                                }
+                                            }
                                         )
                                     }
                                 }
@@ -268,6 +282,7 @@ fun AlphabetToggleButton(
 fun AnimatedAlphabetItemReference(
     item: LessonItem,
     index: Int,
+    isPlaying: Boolean,
     clickCount: Int,
     onClick: () -> Unit
 ) {
@@ -276,7 +291,7 @@ fun AnimatedAlphabetItemReference(
         visibleState = state,
         enter = fadeIn(tween(400, (index % 12) * 30)) + scaleIn(tween(400, (index % 12) * 30), initialScale = 0.9f)
     ) {
-        AlphabetItemDesignCard(item, index, clickCount, onClick)
+        AlphabetItemDesignCard(item, index, isPlaying, clickCount, onClick)
     }
 }
 
@@ -326,6 +341,7 @@ fun AlphabetTopBar(onNavigateBack: () -> Unit, onOpenPdf: () -> Unit) {
 fun AlphabetItemDesignCard(
     item: LessonItem,
     index: Int,
+    isPlaying: Boolean,
     clickCount: Int,
     onClick: () -> Unit
 ) {
@@ -338,7 +354,7 @@ fun AlphabetItemDesignCard(
     val isPressed by interactionSource.collectIsPressedAsState()
     
     val volumeScale by animateFloatAsState(
-        targetValue = if (isPressed) 1.2f else 1f,
+        targetValue = if (isPressed || isPlaying) 1.2f else 1f,
         animationSpec = spring(dampingRatio = 0.5f, stiffness = Spring.StiffnessLow),
         label = "volumeScale"
     )
@@ -347,18 +363,33 @@ fun AlphabetItemDesignCard(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.9f)
-            .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = accentColor.copy(alpha = 0.25f))
+            .shadow(
+                elevation = if (isPlaying) 16.dp else 8.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = accentColor.copy(alpha = if (isPlaying) 0.5f else 0.25f)
+            )
+            .border(
+                width = if (isPlaying) 2.dp else 0.dp,
+                color = if (isPlaying) accentColor else Color.Transparent,
+                shape = RoundedCornerShape(20.dp)
+            )
             .clickable(interactionSource = interactionSource, indication = null) { onClick() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(
+            containerColor = if (isPlaying) accentColor.copy(alpha = 0.05f) else Color.White
+        )
     ) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Box(modifier = Modifier.fillMaxSize()) {
+                if (isPlaying) {
+                    GrammarPulseIndicator(color = accentColor, modifier = Modifier.fillMaxSize())
+                }
+
                 // Volume Icon moved to Top Right (TopEnd in Ltr Provider)
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
+                    imageVector = if (isPlaying) Icons.Rounded.MusicNote else Icons.AutoMirrored.Rounded.VolumeUp,
                     contentDescription = null,
-                    tint = accentColor.copy(alpha = 0.6f),
+                    tint = if (isPlaying) accentColor else accentColor.copy(alpha = 0.6f),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
@@ -375,7 +406,7 @@ fun AlphabetItemDesignCard(
                             .align(Alignment.TopStart)
                             .padding(8.dp)
                             .size(18.dp)
-                            .background(accentColor.copy(alpha = 0.1f), CircleShape),
+                            .background(accentColor.copy(alpha = if (isPlaying) 0.2f else 0.1f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -392,8 +423,8 @@ fun AlphabetItemDesignCard(
                         Text(
                             text = item.scriptText,
                             fontSize = 32.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = Color(0xFF1E293B)
+                            fontWeight = FontWeight.Bold,
+                            color = if (isPlaying) accentColor else Color(0xFF1E293B)
                         )
                     }
                 }

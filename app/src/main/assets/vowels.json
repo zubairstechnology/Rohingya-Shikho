@@ -1,12 +1,12 @@
 [
-  { "id": "v1", "scriptText": "𐴝", "transliteration": "Aafor", "englishMeaning": "Aafor", "audioFileRef": "audio/vowels/a.mp3" },
-  { "id": "v2", "scriptText": "𐴞", "transliteration": "Efor", "englishMeaning": "Efor", "audioFileRef": "audio/vowels/i.mp3" },
-  { "id": "v3", "scriptText": "𐴟", "transliteration": "Ufor", "englishMeaning": "Ufor", "audioFileRef": "audio/vowels/u.mp3" },
-  { "id": "v4", "scriptText": "𐴠", "transliteration": "Aefor", "englishMeaning": "Aefor", "audioFileRef": "audio/vowels/e.mp3" },
-  { "id": "v5", "scriptText": "𐴡", "transliteration": "Ofor", "englishMeaning": "Ofor", "audioFileRef": "audio/vowels/o.mp3" },
-  { "id": "v6", "scriptText": "𐴣", "transliteration": "Nahorna", "englishMeaning": "Nasalization", "audioFileRef": "audio/vowels/na_khonna.mp3" },
-  { "id": "v7", "scriptText": "◌𐴤", "transliteration": "Harbai", "englishMeaning": "Tone 1", "audioFileRef": "audio/vowels/harbahay.mp3" },
-  { "id": "v8", "scriptText": "◌𐴥", "transliteration": "Tela", "englishMeaning": "Tone 2", "audioFileRef": "audio/vowels/tahala.mp3" },
-  { "id": "v9", "scriptText": "◌𐴦", "transliteration": "Tana", "englishMeaning": "Tone 3", "audioFileRef": "audio/vowels/tana.mp3" },
-  { "id": "v10", "scriptText": "◌𐴧", "transliteration": "Tossi", "englishMeaning": "Gemination mark", "audioFileRef": "audio/vowels/tassi.mp3" }
+  { "id": "v1", "scriptText": "𐴝", "transliteration": "Aafor", "englishMeaning": "Aafor", "audioFileRef": "https://drive.google.com/file/d/1zYVRJFsaNvODdO8JjnpS5IJdy7IM9UM6/view?usp=drive_link" },
+  { "id": "v2", "scriptText": "𐴞", "transliteration": "Efor", "englishMeaning": "Efor", "audioFileRef": "https://drive.google.com/file/d/1SueI5FRxvp5dojoBkgSk5YN-5wDjHYmm/view?usp=drive_link" },
+  { "id": "v3", "scriptText": "𐴟", "transliteration": "Ufor", "englishMeaning": "Ufor", "audioFileRef": "https://drive.google.com/file/d/1hcQv-6pr30djA-DzM5sg6iCcYNn2GD7x/view?usp=drive_link" },
+  { "id": "v4", "scriptText": "𐴠", "transliteration": "Aefor", "englishMeaning": "Aefor", "audioFileRef": "https://drive.google.com/file/d/1OmHSNtYgw3QJb2u9KaLLA-K7hudsO5zT/view?usp=drive_link" },
+  { "id": "v5", "scriptText": "𐴡", "transliteration": "Ofor", "englishMeaning": "Ofor", "audioFileRef": "https://drive.google.com/file/d/1vg1CCDVmCKXhcBl_XQQB7tcFy-Nkh-rQ/view?usp=drive_link" },
+  { "id": "v6", "scriptText": "𐴣", "transliteration": "Nahorna", "englishMeaning": "Nasalization", "audioFileRef": "https://drive.google.com/file/d/1f42yuaDSLXo9T-z4yEFpcdVOWzmsAvG9/view?usp=drive_link" },
+  { "id": "v7", "scriptText": "◌𐴤", "transliteration": "Harbai", "englishMeaning": "Tone 1", "audioFileRef": "https://drive.google.com/file/d/1J8-VCEFqvJupQ2m-GicYWRNaLWD_IbzF/view?usp=drive_link" },
+  { "id": "v8", "scriptText": "◌𐴥", "transliteration": "Tela", "englishMeaning": "Tone 2", "audioFileRef": "https://drive.google.com/file/d/1V2Lfhpgyeu1IYRi0O5f-SxIic2vhlME3/view?usp=drive_link" },
+  { "id": "v9", "scriptText": "◌𐴦", "transliteration": "Tana", "englishMeaning": "Tone 3", "audioFileRef": "https://drive.google.com/file/d/1Kp9m4gZrUqil6sa_vkKiJYvI-VuXpx16/view?usp=drive_link" },
+  { "id": "v10", "scriptText": "◌𐴧", "transliteration": "Tossi", "englishMeaning": "Gemination mark", "audioFileRef": "https://drive.google.com/file/d/1nF4T0IIBT5kFtBvPqGwpULyQriQlmb_Y/view?usp=drive_link" }
 ]

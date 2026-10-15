@@ -22,6 +22,9 @@ class SettingsViewModel @Inject constructor(
     val appLanguage: StateFlow<String> = userPreferences.appLanguage
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "en")
 
+    val userName: StateFlow<String?> = userPreferences.userName
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     val isAdmin: StateFlow<Boolean> = combine(
         userPreferences.userName,
         userPreferences.userAge

@@ -2,7 +2,9 @@ package com.zubtech.rohingyashikho.presentation.alphabet
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,6 +14,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
@@ -20,8 +23,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Lightbulb
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -35,14 +38,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.zubtech.rohingyashikho.R
 import com.zubtech.rohingyashikho.domain.model.LessonItem
 import com.zubtech.rohingyashikho.presentation.ui.components.AnimatedBeautyBackground
+import com.zubtech.rohingyashikho.presentation.ui.components.GrammarPulseIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -54,6 +60,8 @@ fun AlphabetCombinationScreen(
 ) {
     val consonants by viewModel.consonants.collectAsState()
     val vowels by viewModel.vowels.collectAsState()
+    // Important: Collect combinations so the flow is active and ViewModel can access loaded data
+    val combinations by viewModel.combinations.collectAsState()
     val scope = rememberCoroutineScope()
 
     if (consonants.isEmpty() || vowels.isEmpty()) {
@@ -63,10 +71,7 @@ fun AlphabetCombinationScreen(
         return
     }
 
-    // Display all consonants including dda, ka, na, rra, sha, nga
     val displayConsonants = remember(consonants) { consonants }
-    
-    // Remain only the five primary vowels as requested
     val mainVowels = remember(vowels) { vowels.take(5) }
     val pagerState = rememberPagerState(pageCount = { mainVowels.size })
 
@@ -136,7 +141,7 @@ fun AlphabetCombinationScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                // Luxury Vowel Selection Bar (5 Vowels)
+                // Luxury Vowel Selection Bar
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -332,10 +337,13 @@ fun AnimatedBeautyGrid(
     themeColor: Color,
     viewModel: AlphabetViewModel
 ) {
+    val playingItemId by viewModel.playingItemId.collectAsState()
+    val isAudioPlaying by viewModel.isAudioPlaying.collectAsState()
+
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(4),
-            contentPadding = PaddingValues(start = 24.dp, top = 32.dp, end = 24.dp, bottom = 180.dp), // Bottom padding for better scroll
+            contentPadding = PaddingValues(start = 24.dp, top = 32.dp, end = 24.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
@@ -348,16 +356,34 @@ fun AnimatedBeautyGrid(
                     isVisible = true
                 }
 
+                val combinationId = "${consonant.id}_${vowel.id}"
+                val isItemPlaying = isAudioPlaying && playingItemId == combinationId
+
                 AnimatedVisibility(
                     visible = isVisible,
                     enter = fadeIn(tween(600, index * 10)) +
                             scaleIn(tween(600, index * 10), initialScale = 0.9f) +
                             slideInVertically(tween(600, index * 10)) { it / 4 }
                 ) {
-                    ModernLuxuryCombinationCard(consonant, vowel, themeColor) {
-                        viewModel.playAudio(consonant)
+                    ModernLuxuryCombinationCard(
+                        consonant = consonant,
+                        vowel = vowel,
+                        index = index,
+                        themeColor = themeColor,
+                        isPlaying = isItemPlaying
+                    ) {
+                        viewModel.playCombinationAudio(consonant, vowel)
                     }
                 }
+            }
+
+            // Interactive Example Section integrated into the scrollable grid
+            item(span = { GridItemSpan(4) }) {
+                InteractiveExampleSection(
+                    item = vowel,
+                    themeColor = themeColor,
+                    viewModel = viewModel
+                )
             }
         }
     }
@@ -367,12 +393,44 @@ fun AnimatedBeautyGrid(
 fun ModernLuxuryCombinationCard(
     consonant: LessonItem,
     vowel: LessonItem,
+    index: Int,
     themeColor: Color,
+    isPlaying: Boolean,
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
+    // Luxury gradients for individual cells
+    val gradients = remember {
+        listOf(
+            listOf(Color(0xFF6366F1), Color(0xFFA855F7)), // Indigo-Purple
+            listOf(Color(0xFFEC4899), Color(0xFFF43F5E)), // Pink-Rose
+            listOf(Color(0xFF10B981), Color(0xFF059669)), // Emerald-Green
+            listOf(Color(0xFFF59E0B), Color(0xFFD97706)), // Amber-Orange
+            listOf(Color(0xFF3B82F6), Color(0xFF2563EB)), // Blue-Indigo
+            listOf(Color(0xFF8B5CF6), Color(0xFF7C3AED)), // Violet-Purple
+            listOf(Color(0xFFF97316), Color(0xFFEA580C)), // Orange-Red
+            listOf(Color(0xFF06B6D4), Color(0xFF0891B2)), // Cyan-Teal
+            listOf(Color(0xFF14B8A6), Color(0xFF0D9488)), // Teal-Green
+            listOf(Color(0xFFEF4444), Color(0xFFDC2626))  // Red-DarkRed
+        )
+    }
+    val currentGradient = gradients[index % gradients.size]
+    
+    // Shining animation ONLY when pressed
+    val infiniteTransition = rememberInfiniteTransition(label = "shining")
+    val shineOffset by infiniteTransition.animateFloat(
+        initialValue = -150f,
+        targetValue = 450f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shineOffset"
+    )
+
+    // Interaction states - removed isPlaying to prevent "shrunken/held" visual during audio
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.94f else 1f,
         animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessLow),
@@ -383,6 +441,39 @@ fun ModernLuxuryCombinationCard(
         targetValue = if (isPressed) 4.dp else 12.dp,
         label = "shadow"
     )
+    
+    // Border brush logic: white shine ONLY on press. Bold static color when playing.
+    val borderBrush = when {
+        isPressed -> {
+            Brush.linearGradient(
+                colors = listOf(
+                    currentGradient[0],
+                    currentGradient[1],
+                    Color.White.copy(alpha = 0.9f),
+                    currentGradient[0],
+                    currentGradient[1]
+                ),
+                start = Offset(shineOffset, shineOffset),
+                end = Offset(shineOffset + 100f, shineOffset + 100f)
+            )
+        }
+        isPlaying -> {
+            // Bold solid gradient while playing - removed shifting shine and transparency
+            Brush.linearGradient(
+                colors = currentGradient,
+                start = Offset.Zero,
+                end = Offset.Infinite
+            )
+        }
+        else -> {
+            // Subtle static gradient for idle state
+            Brush.linearGradient(
+                colors = currentGradient.map { it.copy(alpha = 0.7f) },
+                start = Offset.Zero,
+                end = Offset.Infinite
+            )
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -392,7 +483,12 @@ fun ModernLuxuryCombinationCard(
             .shadow(
                 elevation = shadowIntensity,
                 shape = RoundedCornerShape(24.dp),
-                spotColor = themeColor.copy(alpha = 0.4f)
+                spotColor = currentGradient[0].copy(alpha = if (isPlaying) 0.6f else 0.4f)
+            )
+            .border(
+                width = if (isPressed || isPlaying) 4.dp else 1.5.dp,
+                brush = borderBrush,
+                shape = RoundedCornerShape(24.dp)
             )
             .clickable(
                 interactionSource = interactionSource,
@@ -400,39 +496,226 @@ fun ModernLuxuryCombinationCard(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(
-            width = 1.5.dp,
-            color = themeColor.copy(alpha = 0.15f)
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
         )
     ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                val sakinSign = "𐴢"
+                val dottedCircle = "◌"
+                val carrierA = "𐴀"
+                
+                val baseConsonant = consonant.scriptText.replace(sakinSign, "").trim()
+                val cleanVowel = vowel.scriptText
+                    .replace(dottedCircle, "")
+                    .replace(carrierA, "")
+                    .replace(sakinSign, "")
+                    .trim()
+                
+                Text(
+                    text = "${baseConsonant}${cleanVowel}",
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (isPlaying) currentGradient[0] else Color(0xFF1E293B),
+                    lineHeight = 44.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun InteractiveExampleSection(
+    item: LessonItem,
+    themeColor: Color,
+    viewModel: AlphabetViewModel
+) {
+    val isPlaying by viewModel.isAudioPlaying.collectAsState()
+    val playingId by viewModel.playingItemId.collectAsState()
+    val isItemPlaying = isPlaying && playingId == item.id
+
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 40.dp)
         ) {
-            val sakinSign = "𐴢"
-            val dottedCircle = "◌"
-            val carrierA = "𐴀"
-            
-            // Extract base consonant by removing any existing sakin to avoid double sakin
-            val baseConsonant = consonant.scriptText.replace(sakinSign, "").trim()
-            
-            // Extract clean vowel
-            val cleanVowel = vowel.scriptText
-                .replace(dottedCircle, "")
-                .replace(carrierA, "")
-                .replace(sakinSign, "")
-                .trim()
-            
-            Text(
-                text = "${baseConsonant}${cleanVowel}",
-                fontSize = 42.sp,
-                fontWeight = FontWeight.Black,
-                color = Color(0xFF1E293B),
-                lineHeight = 44.sp,
-                textAlign = TextAlign.Center
-            )
+            // Header exactly like Grammar Screen
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(themeColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Rounded.AutoAwesome, null, tint = themeColor, modifier = Modifier.size(22.dp))
+                }
+                Spacer(Modifier.width(14.dp))
+                Column {
+                    Text(
+                        text = "INTERACTIVE EXAMPLE",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Black,
+                        color = themeColor,
+                        letterSpacing = 1.2.sp
+                    )
+                    Text(
+                        text = "Real-world usage in context",
+                        fontSize = 10.sp,
+                        color = Color(0xFF64748B)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // Premium Card styled like Grammar Example Carousel Items
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(280.dp)
+                    .shadow(
+                        elevation = 24.dp,
+                        shape = RoundedCornerShape(36.dp),
+                        spotColor = themeColor.copy(alpha = 0.5f)
+                    ),
+                shape = RoundedCornerShape(36.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(
+                    width = 2.5.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(themeColor, Color(0xFFFFD700), Color(0xFF00E5FF))
+                    )
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp).fillMaxSize(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Top Section: Illustration & Focus
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            modifier = Modifier.size(48.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            color = themeColor.copy(alpha = 0.1f)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.graphic1),
+                                contentDescription = null,
+                                modifier = Modifier.padding(10.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = "CASE STUDY",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF94A3B8),
+                                letterSpacing = 1.5.sp
+                            )
+                            Text(
+                                text = "Character Practice",
+                                fontSize = 11.sp,
+                                color = themeColor,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(Modifier.weight(1f))
+                        
+                        // English TTS Button
+                        Surface(
+                            color = themeColor.copy(alpha = 0.08f),
+                            shape = CircleShape,
+                            onClick = { viewModel.speakEnglish(item.englishMeaning) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.RecordVoiceOver,
+                                null,
+                                tint = themeColor,
+                                modifier = Modifier.padding(10.dp).size(22.dp)
+                            )
+                        }
+                    }
+
+                    // English Section
+                    Column {
+                        Text(
+                            text = "ENGLISH MEANING",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF64748B)
+                        )
+                        Text(
+                            text = item.englishMeaning,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF1E293B),
+                            lineHeight = 30.sp
+                        )
+                    }
+
+                    // Artistic Divider
+                    Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(Color(0xFFF1F5F9)))
+
+                    // Rohingya Section with Pronunciation
+                    Column(horizontalAlignment = Alignment.End) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.HistoryEdu, null, tint = themeColor.copy(alpha = 0.4f), modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = "ROHINGYA (HANIFI)",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = themeColor
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                        ) {
+                            // Audio Button with Pulse
+                            Surface(
+                                color = if (isItemPlaying) Color(0xFFFFD700) else themeColor.copy(alpha = 0.08f),
+                                shape = CircleShape,
+                                onClick = { viewModel.playAudio(item) }
+                            ) {
+                                Box(modifier = Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+                                    if (isItemPlaying) {
+                                        GrammarPulseIndicator(color = themeColor, modifier = Modifier.size(44.dp))
+                                    }
+                                    Icon(
+                                        imageVector = if (isItemPlaying) Icons.Rounded.MusicNote else Icons.AutoMirrored.Rounded.VolumeUp,
+                                        null,
+                                        tint = if (isItemPlaying) Color.White else themeColor,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+                            
+                            Spacer(Modifier.width(16.dp))
+                            
+                            Text(
+                                text = item.scriptText,
+                                fontSize = 42.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF0F172A),
+                                textAlign = TextAlign.End
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

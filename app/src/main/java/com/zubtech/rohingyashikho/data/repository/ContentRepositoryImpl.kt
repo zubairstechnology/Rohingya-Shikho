@@ -13,6 +13,7 @@ import com.zubtech.rohingyashikho.domain.model.Course
 import com.zubtech.rohingyashikho.domain.model.Lesson
 import com.zubtech.rohingyashikho.domain.model.LessonItem
 import com.zubtech.rohingyashikho.domain.model.Unit
+import com.zubtech.rohingyashikho.domain.repository.CombinationAudio
 import com.zubtech.rohingyashikho.domain.repository.ContentRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
@@ -83,6 +84,13 @@ class ContentRepositoryImpl @Inject constructor(
         emit(items)
     }
 
+    override fun getCombinations(): Flow<List<CombinationAudio>> = flow {
+        val jsonString = context.assets.open("combinations.json").bufferedReader().use { it.readText() }
+        val type = object : TypeToken<List<CombinationAudio>>() {}.type
+        val items: List<CombinationAudio> = gson.fromJson(jsonString, type)
+        emit(items)
+    }
+
     override fun getAppUpdateInfo(): Flow<AppUpdateInfo> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -96,7 +104,6 @@ class ContentRepositoryImpl @Inject constructor(
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.e("Firebase", "Database error: ${error.message}")
-                // Instead of closing with error (which causes crash), send default info
                 trySend(AppUpdateInfo())
             }
         }

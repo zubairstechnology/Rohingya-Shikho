@@ -1,8 +1,6 @@
 package com.zubtech.rohingyashikho.presentation.level
 
 import android.content.Context
-import android.media.MediaPlayer
-import android.speech.tts.TextToSpeech
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,10 +31,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.zubtech.rohingyashikho.R
-import java.util.Locale
+import com.zubtech.rohingyashikho.data.audio.AudioPlayer
+import com.zubtech.rohingyashikho.data.audio.TtsManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class VocabularyItem(
     val id: String? = null,
@@ -55,48 +60,41 @@ data class VocabularyCategory(
     val gradientColors: List<Color>
 )
 
+@HiltViewModel
+class VocabularyViewModel @Inject constructor(
+    private val ttsManager: TtsManager,
+    private val audioPlayer: AudioPlayer
+) : ViewModel() {
+
+    fun speakEnglish(text: String) {
+        viewModelScope.launch {
+            ttsManager.speak(text)
+        }
+    }
+
+    fun playRohingya(url: String?) {
+        if (url.isNullOrEmpty()) return
+        audioPlayer.playUrl(url)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioPlayer.stop()
+        ttsManager.stop()
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedVocabularyScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    viewModel: VocabularyViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
-    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var selectedCategory by remember { mutableStateOf<VocabularyCategory?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     
     val vocabularyItems = remember { loadVocabularyFromAssets(context) }
-
-    DisposableEffect(Unit) {
-        val ttsInstance = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                // Success
-            }
-        }
-        ttsInstance.language = Locale.US
-        tts = ttsInstance
-        onDispose {
-            ttsInstance.stop()
-            ttsInstance.shutdown()
-            mediaPlayer?.release()
-        }
-    }
-
-    fun playAudio(url: String?) {
-        if (url.isNullOrEmpty()) return
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        try {
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(url)
-                setOnPreparedListener { start() }
-                prepareAsync()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -144,10 +142,10 @@ fun AdvancedVocabularyScreen(
                     category = selectedCategory!!,
                     allVocabularyItems = vocabularyItems,
                     onSpeakEnglish = { text ->
-                        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+                        viewModel.speakEnglish(text)
                     },
                     onPlayRohingya = { url ->
-                        playAudio(url)
+                        viewModel.playRohingya(url)
                     }
                 )
             }

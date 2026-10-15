@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zubtech.rohingyashikho.data.audio.AudioPlayer
+import com.zubtech.rohingyashikho.data.audio.TtsManager
 import com.zubtech.rohingyashikho.domain.model.LessonItem
 import com.zubtech.rohingyashikho.domain.repository.ContentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,6 +39,7 @@ data class QuizUiState(
 class QuizViewModel @Inject constructor(
     private val contentRepository: ContentRepository,
     private val audioPlayer: AudioPlayer,
+    private val ttsManager: TtsManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -88,6 +90,19 @@ class QuizViewModel @Inject constructor(
         return QuizQuestion(item, options.shuffled(), type)
     }
 
+    fun playQuestionAudio() {
+        val question = _uiState.value.currentQuestion ?: return
+        if (question.type == QuizType.AUDIO_TO_SCRIPT) {
+            if (question.item.audioFileRef.isNotEmpty()) {
+                audioPlayer.playAsset(question.item.audioFileRef)
+            } else {
+                viewModelScope.launch {
+                    ttsManager.speak(question.item.englishMeaning)
+                }
+            }
+        }
+    }
+
     fun submitAnswer(answer: String) {
         val currentState = _uiState.value
         val currentQuestion = currentState.currentQuestion ?: return
@@ -115,5 +130,6 @@ class QuizViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         audioPlayer.stop()
+        ttsManager.stop()
     }
 }

@@ -74,12 +74,18 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
 
     implementation(libs.media3.exoplayer)
+    implementation(libs.media3.datasource)
     implementation(libs.media3.ui)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.gson)
     implementation(libs.lottie.compose)
     implementation(libs.coil.compose)
+
+    // Networking
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp.logging)
 
     // Firebase
     implementation(platform(libs.firebase.bom))

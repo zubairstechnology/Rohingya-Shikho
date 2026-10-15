@@ -1,7 +1,5 @@
 package com.zubtech.rohingyashikho.presentation.level
 
-import android.media.MediaPlayer
-import android.speech.tts.TextToSpeech
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -20,13 +18,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -34,14 +30,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.util.Locale
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.zubtech.rohingyashikho.data.audio.AudioPlayer
+import com.zubtech.rohingyashikho.data.audio.TtsManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.random.Random
 
 data class Dialogue(
     val english: String,
     val rohingya: String,
     val speaker: String, // "A" or "B"
-    val audioUrl: String? = null
+    val englishAudioUrl: String? = null,
+    val rohingyaAudioUrl: String? = null
 )
 
 data class ConversationSet(
@@ -51,44 +55,41 @@ data class ConversationSet(
     val dialogues: List<Dialogue>
 )
 
+@HiltViewModel
+class ConversationViewModel @Inject constructor(
+    private val ttsManager: TtsManager,
+    private val audioPlayer: AudioPlayer
+) : ViewModel() {
+
+    fun playAudio(url: String?, text: String) {
+        if (!url.isNullOrEmpty()) {
+            audioPlayer.playUrl(url)
+        } else {
+            viewModelScope.launch {
+                ttsManager.speak(text)
+            }
+        }
+    }
+
+    fun playRohingya(url: String?) {
+        if (url.isNullOrEmpty()) return
+        audioPlayer.playUrl(url)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioPlayer.stop()
+        ttsManager.stop()
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConversationScreen(onNavigateBack: () -> Unit) {
-    val context = LocalContext.current
+fun ConversationScreen(
+    onNavigateBack: () -> Unit,
+    viewModel: ConversationViewModel = hiltViewModel()
+) {
     var selectedSet by remember { mutableStateOf<ConversationSet?>(null) }
-    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
-    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-
-    // Initialize TTS
-    DisposableEffect(Unit) {
-        val ttsInstance = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                // Initialized
-            }
-        }
-        ttsInstance.language = Locale.US
-        tts = ttsInstance
-        onDispose {
-            ttsInstance.stop()
-            ttsInstance.shutdown()
-            mediaPlayer?.release()
-        }
-    }
-
-    fun playAudio(url: String?) {
-        if (url.isNullOrEmpty()) return
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        try {
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(url)
-                setOnPreparedListener { start() }
-                prepareAsync()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -121,8 +122,8 @@ fun ConversationScreen(onNavigateBack: () -> Unit) {
             } else {
                 DialogueChat(
                     set = selectedSet!!,
-                    onSpeakEnglish = { text -> tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null) },
-                    onPlayRohingya = { url -> playAudio(url) }
+                    onPlayEnglish = { url, text -> viewModel.playAudio(url, text) },
+                    onPlayRohingya = { url -> viewModel.playRohingya(url) }
                 )
             }
         }
@@ -200,7 +201,21 @@ fun ConversationGrid(onSetClick: (ConversationSet) -> Unit) {
         ConversationSet("Food & Restaurant", Icons.Rounded.Restaurant, Color(0xFFF43F5E), mockFood),
         ConversationSet("Shopping & Market", Icons.Rounded.ShoppingBag, Color(0xFFEC4899), mockShopping),
         ConversationSet("Health & Hospital", Icons.Rounded.LocalHospital, Color(0xFFEF4444), mockHospital),
-        ConversationSet("Travel & Directions", Icons.Rounded.Flight, Color(0xFFF59E0B), mockTravel)
+        ConversationSet("Travel & Directions", Icons.Rounded.Flight, Color(0xFFF59E0B), mockTravel),
+        ConversationSet("Family & Home", Icons.Rounded.FamilyRestroom, Color(0xFF8B5CF6), mockFamily),
+        ConversationSet("Weather & Nature", Icons.Rounded.Cloud, Color(0xFF06B6D4), mockWeather),
+        ConversationSet("Time & Date", Icons.Rounded.Schedule, Color(0xFF14B8A6), mockTime),
+        ConversationSet("Education", Icons.Rounded.School, Color(0xFFF97316), mockEducation),
+        ConversationSet("Work & Jobs", Icons.Rounded.Work, Color(0xFF84cc16), mockWork),
+        ConversationSet("Hobbies", Icons.Rounded.SportsSoccer, Color(0xFFef4444), mockHobbies),
+        ConversationSet("Emergency", Icons.Rounded.Warning, Color(0xFFD32F2F), mockEmergency),
+        ConversationSet("Home Items", Icons.Rounded.Home, Color(0xFF795548), mockHomeItems),
+        ConversationSet("Emotions", Icons.Rounded.Mood, Color(0xFFFF4081), mockEmotions),
+        ConversationSet("Technology", Icons.Rounded.Computer, Color(0xFF607D8B), mockTech),
+        ConversationSet("Animals", Icons.Rounded.Pets, Color(0xFF4CAF50), mockAnimals),
+        ConversationSet("Colors", Icons.Rounded.Palette, Color(0xFFFFC107), mockColors),
+        ConversationSet("Numbers", Icons.Rounded.Numbers, Color(0xFF2196F3), mockNumbers),
+        ConversationSet("Culture", Icons.Rounded.Public, Color(0xFF9C27B0), mockCulture)
     )
 
     LazyColumn(
@@ -249,7 +264,7 @@ fun ConversationGrid(onSetClick: (ConversationSet) -> Unit) {
 @Composable
 fun DialogueChat(
     set: ConversationSet,
-    onSpeakEnglish: (String) -> Unit,
+    onPlayEnglish: (String?, String) -> Unit,
     onPlayRohingya: (String?) -> Unit
 ) {
     LazyColumn(
@@ -267,7 +282,7 @@ fun DialogueChat(
                 verticalAlignment = Alignment.Top
             ) {
                 if (isA) {
-                    AvatarIcon(Color(0xFF6366F1), "A")
+                    AvatarIcon(bubbleColor, "A")
                     Spacer(Modifier.width(12.dp))
                 }
 
@@ -293,7 +308,6 @@ fun DialogueChat(
                         modifier = Modifier.widthIn(max = 300.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            // Header Row with En and Rh buttons at corners
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -303,20 +317,19 @@ fun DialogueChat(
                                     label = "En",
                                     icon = Icons.Rounded.VolumeUp,
                                     activeColor = Color(0xFF6366F1),
-                                    onClick = { onSpeakEnglish(dialogue.english) }
+                                    onClick = { onPlayEnglish(dialogue.englishAudioUrl, dialogue.english) }
                                 )
                                 
                                 LanguagePlayButton(
                                     label = "Rh",
                                     icon = Icons.Rounded.VolumeUp,
                                     activeColor = Color(0xFF10B981),
-                                    onClick = { onPlayRohingya(dialogue.audioUrl) }
+                                    onClick = { onPlayRohingya(dialogue.rohingyaAudioUrl) }
                                 )
                             }
                             
                             Spacer(Modifier.height(20.dp))
                             
-                            // Rohingya Text with RTL Support
                             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                                 Text(
                                     text = dialogue.rohingya,
@@ -324,14 +337,13 @@ fun DialogueChat(
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Black,
                                     lineHeight = 32.sp,
-                                    textAlign = TextAlign.Start, // Start in RTL is Right
+                                    textAlign = TextAlign.Start,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                             
                             Spacer(Modifier.height(10.dp))
                             
-                            // English Text (LTR)
                             Text(
                                 text = dialogue.english,
                                 color = Color(0xFF475569),
@@ -345,9 +357,23 @@ fun DialogueChat(
 
                 if (!isA) {
                     Spacer(Modifier.width(12.dp))
-                    AvatarIcon(set.color, "B")
+                    AvatarIcon(bubbleColor, "B")
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun AvatarIcon(color: Color, label: String) {
+    Surface(
+        modifier = Modifier.size(40.dp),
+        shape = CircleShape,
+        color = color.copy(alpha = 0.15f),
+        border = BorderStroke(2.dp, color)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(label, fontWeight = FontWeight.Bold, color = color)
         }
     }
 }
@@ -399,97 +425,33 @@ fun LanguagePlayButton(
     }
 }
 
-@Composable
-fun AvatarIcon(color: Color, label: String) {
-    Box(
-        modifier = Modifier
-            .size(44.dp)
-            .background(color.copy(alpha = 0.1f), CircleShape)
-            .border(2.5.dp, color, CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(Icons.Rounded.Person, null, tint = color, modifier = Modifier.size(26.dp))
-        Surface(
-            color = color,
-            shape = CircleShape,
-            modifier = Modifier.align(Alignment.BottomEnd).size(18.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    label, 
-                    color = Color.White, 
-                    fontSize = 10.sp, 
-                    fontWeight = FontWeight.Black
-                )
-            }
-        }
-    }
-}
-
-// Mock Data
-val mockGreetings = listOf(
-    Dialogue("Hello, how are you?", "𐴀𐴝𐴙𐴓𐴝𐴔 𐴀𐴝𐴓𐴝𐴙𐴑𐴟𐴔, 𐴑𐴝𐴕 𐴀𐴝𐴔", "A"),
-    Dialogue("I am fine, thank you.", "𐴔𐴟𐴙𐴕 𐴁𐴝𐴓𐴝 𐴀𐴝𐴔, 𐴀𐴞𐴕𐴓𐴝", "B", "https://example.com/audio1.mp3"),
-    Dialogue("What is your name?", "𐴀𐴡𐴕𐴡𐴙 𐴕𐴝𐴔 𐴑𐴞?", "A"),
-    Dialogue("My name is Rohim.", "𐴀𐴝𐴕𐴝𐴔 𐴕𐴝𐴔 𐴑𐴝𐴔", "B", "https://example.com/audio2.mp3"),
-    Dialogue("Where are you from?", "𐴀𐴡𐴕𐴡𐴙 𐴑𐴡𐴙𐴕𐴊𐴝 𐴀𐴝𐴔?", "A"),
-    Dialogue("I am from Cox's Bazar.", "𐴔𐴟𐴙𐴕 𐴑𐴡𐴑𐴁𐴝𐴎𐴝𐴔 𐴀𐴝𐴔", "B", "https://example.com/audio3.mp3"),
-    Dialogue("How old are you?", "𐴀𐴡𐴕𐴡𐴙𐴓𐴝 𐴁𐴡𐴙𐴡𐴙 𐴑𐴡𐴔?", "A"),
-    Dialogue("I am twenty years old.", "𐴔𐴟𐴙𐴕 𐴑𐴟𐴊 𐴁𐴡𐴙𐴡𐴙 𐴀𐴝𐴔", "B", "https://example.com/audio4.mp3"),
-    Dialogue("Nice to meet you.", "𐴀𐴡𐴕𐴡𐴙𐴓𐴝 𐴔𐴞𐴓𐴞 𐴑𐴟𐴔𐴞 𐴓𐴝𐴒𐴞𐴓", "A")
+val mockGreetings = emptyList<Dialogue>()
+val mockDaily = emptyList<Dialogue>()
+val mockFood = emptyList<Dialogue>()
+val mockShopping = emptyList<Dialogue>()
+val mockHospital = emptyList<Dialogue>()
+val mockTravel = emptyList<Dialogue>()
+val mockFamily = emptyList<Dialogue>()
+val mockWeather = emptyList<Dialogue>()
+val mockTime = emptyList<Dialogue>()
+val mockEducation = emptyList<Dialogue>()
+val mockWork = emptyList<Dialogue>()
+val mockHobbies = emptyList<Dialogue>()
+val mockGreetingsSet = listOf(
+    Dialogue("Hello", "𐴀𐴝𐴏𐴧𐴝𐴓𐴝𐴔𐴟 𐴀𐴝𐴓𐴝𐴙𐴑𐴟𐴔", "A"),
+    Dialogue("Hello (Response)", "𐴖𐴝𐴓𐴝𐴙𐴑𐴟𐴔 𐴀𐴝𐴏𐴧𐴝𐴓𐴝𐴔", "B"),
+    Dialogue("How are you?", "𐴑𐴠𐴕𐴠 𐴀𐴝𐴌?", "A"),
+    Dialogue("I am fine, thank you.", "𐴔𐴟𐴦𐴙 𐴁𐴝𐴓𐴝 𐴀𐴝𐴌, 𐴐𐴟𐴑𐴟𐴌𐴙𐴝𐴒𐴟𐴎𐴝𐴌", "B"),
+    Dialogue("What is your name?", "𐴀𐴞𐴕𐴞 𐴕𐴝𐴔 𐴑𐴞?", "A"),
+    Dialogue("My name is Zubair.", "𐴀𐴝𐴦𐴙 𐴕𐴝𐴔 𐴎𐴟𐴁𐴝𐴙𐴌", "B"),
+    Dialogue("Nice to meet you.", "𐴀𐴞𐴕𐴞 𐴓𐴡𐴒𐴠 𐴓𐴡𐴑 𐴀𐴡𐴙 𐴁𐴝𐴓𐴝 𐴓𐴝𐴒𐴙𐴓", "A"),
+    Dialogue("Nice to meet you too.", "𐴔𐴟𐴦𐴙 𐴁𐴞 𐴁𐴝𐴓𐴝 𐴓𐴝𐴒𐴙𐴓", "B")
 )
-
-val mockDaily = listOf(
-    Dialogue("What time is it now?", "𐴑𐴡𐴔 𐴁𐴝𐴙𐴔 𐴀𐴡𐴙𐴒𐴞?", "A"),
-    Dialogue("It is ten o'clock.", "𐴊𐴡𐴙 𐴁𐴝𐴙𐴔 𐴀𐴡𐴙𐴒𐴞", "B", "https://example.com/daily1.mp3"),
-    Dialogue("What are you doing?", "𐴀𐴡𐴕𐴡𐴙 𐴑𐴞 𐴑𐴝𐴔 𐴒𐴡𐴙?", "A"),
-    Dialogue("I am reading a book.", "𐴔𐴟𐴙𐴕 𐴑𐴞𐴔𐴝𐴕 𐴉𐴡𐴙𐴔", "B", "https://example.com/daily2.mp3"),
-    Dialogue("Are you going outside?", "𐴀𐴡𐴕𐴡𐴙 𐴁𐴝𐴙𐴔 𐴎𐴝𐴙𐴁𐴝 𐴑𐴞?", "A"),
-    Dialogue("Yes, I am going to the market.", "𐴇𐴡𐴙, 𐴔𐴟𐴙𐴕 𐴁𐴝𐴔𐴝𐴊 𐴎𐴝𐴙𐴔", "B", "https://example.com/daily3.mp3"),
-    Dialogue("When will you come back?", "𐴀𐴡𐴕𐴡𐴙 𐴑𐴡𐴔 𐴁𐴝𐴙𐴔 𐴀𐴝𐴙𐴁𐴝?", "A"),
-    Dialogue("I will be back in an hour.", "𐴀𐴞𐴙 𐴒𐴡𐴕𐴂𐴝 𐴓𐴝𐴒𐴞𐴁𐴡", "B", "https://example.com/daily4.mp3")
-)
-
-val mockFood = listOf(
-    Dialogue("I am hungry.", "𐴔𐴟𐴙𐴕 𐴂𐴟𐴓 𐴓𐴝𐴒𐴞𐴓", "A"),
-    Dialogue("Let's go to a restaurant.", "𐴀𐴝𐴙 𐴇𐴡𐴂𐴝𐴕 𐴎𐴝𐴙", "B", "https://example.com/food1.mp3"),
-    Dialogue("I want some rice and fish.", "𐴔𐴟𐴙𐴕 𐴁𐴝𐴙𐴕 𐴀𐴝𐴔 𐴔𐴝𐴙 𐴑𐴝𐴙𐴔", "A"),
-    Dialogue("Do you want water or juice?", "𐴀𐴡𐴕𐴡𐴙 𐴉𐴝𐴕𐴞 𐴑𐴝𐴙𐴁𐴝 𐴑𐴞 𐴎𐴟𐴔?", "B", "https://example.com/food2.mp3"),
-    Dialogue("Water is enough for me.", "𐴉𐴝𐴕𐴞 𐴁𐴝𐴓𐴝 𐴀𐴝𐴔", "A"),
-    Dialogue("Is the food spicy?", "𐴑𐴝𐴕𐴝 𐴎𐴝𐴓 𐴑𐴞?", "B", "https://example.com/food3.mp3"),
-    Dialogue("No, it is very delicious.", "𐴕𐴝, 𐴁𐴡𐴙𐴔 𐴔𐴞𐴒𐴞", "A"),
-    Dialogue("I am full now.", "𐴔𐴟𐴙𐴕 𐴉𐴞𐴊 𐴁𐴡𐴔 𐴀𐴡𐴙𐴒𐴞", "B", "https://example.com/food4.mp3")
-)
-
-val mockShopping = listOf(
-    Dialogue("How much is this shirt?", "𐴀𐴞 𐴁𐴝𐴙𐴔 𐴑𐴡𐴔 𐴑𐴞?", "A"),
-    Dialogue("It is 500 Taka.", "𐴀𐴞𐴁𐴝 𐴉𐴝𐴙 𐴑𐴡𐴔", "B", "https://example.com/shop1.mp3"),
-    Dialogue("Can you give a discount?", "𐴑𐴡𐴔 𐴒𐴡𐴙 𐴓𐴝𐴙?", "A"),
-    Dialogue("I can give it for 450.", "𐴔𐴟𐴙𐴕 𐴂𐴝𐴙 𐴉𐴡𐴕𐴎𐴝𐴙 𐴓𐴡𐴔", "B", "https://example.com/shop2.mp3"),
-    Dialogue("Do you have shoes?", "𐴀𐴡𐴕𐴡𐴙𐴓𐴝 𐴑𐴝𐴔𐴞𐴙𐴕 𐴀𐴝𐴔 𐴑𐴞?", "A"),
-    Dialogue("Yes, what size?", "𐴇𐴡𐴙, 𐴑𐴡𐴔 𐴑𐴟𐴊𐴞?", "B", "https://example.com/shop3.mp3"),
-    Dialogue("I need size nine.", "𐴔𐴟𐴙𐴕 𐴕𐴡 𐴑𐴟𐴊𐴞 𐴓𐴝𐴒𐴞𐴔", "A"),
-    Dialogue("Thank you, come again.", "𐴀𐴞𐴕𐴓𐴝, 𐴀𐴝𐴙𐴕𐴊𐴝 𐴀𐴝𐴙𐴙", "B", "https://example.com/shop4.mp3")
-)
-
-val mockHospital = listOf(
-    Dialogue("I feel sick.", "𐴔𐴟𐴙𐴕 𐴁𐴞𐴔𐴝𐴔 𐴓𐴝𐴒𐴞", "A"),
-    Dialogue("Where does it hurt?", "𐴑𐴡𐴙𐴕𐴊𐴝 𐴑𐴝𐴔 𐴒𐴡𐴙?", "B", "https://example.com/hosp1.mp3"),
-    Dialogue("My head hurts.", "𐴀𐴝𐴕𐴝𐴔 𐴔𐴝𐴔𐴝 𐴑𐴝 𐴒𐴡𐴙", "A"),
-    Dialogue("You should see a doctor.", "𐴀𐴡𐴕𐴡𐴙 𐴊𐴝𐴓𐴝𐴔 𐴓𐴝 𐴎𐴝𐴙", "B", "https://example.com/hosp2.mp3"),
-    Dialogue("I have a fever.", "𐴔𐴟𐴙𐴕 𐴒𐴝 𐴒𐴟𐴔", "A"),
-    Dialogue("Take this medicine.", "𐴀𐴞 𐴊𐴝𐴔𐴝 𐴑𐴝𐴙", "B", "https://example.com/hosp3.mp3"),
-    Dialogue("When should I take it?", "𐴑𐴡𐴔 𐴀𐴞𐴙 𐴑𐴝𐴙𐴔?", "A"),
-    Dialogue("After eating.", "𐴑𐴝𐴕𐴝 𐴑𐴝𐴙 𐴓𐴝𐴙", "B", "https://example.com/hosp4.mp3")
-)
-
-val mockTravel = listOf(
-    Dialogue("Where is the bus stop?", "𐴁𐴝𐴙 𐴑𐴡𐴙𐴕𐴊𐴝 𐴇𐴝𐴔?", "A"),
-    Dialogue("Go straight and turn left.", "𐴇𐴞𐴊𐴝 𐴎𐴝𐴙 𐴁𐴝𐴙 𐴔𐴟𐴙𐴕", "B", "https://example.com/travel1.mp3"),
-    Dialogue("I want a taxi.", "𐴔𐴟𐴙𐴕 𐴀𐴞𐴙 𐴒𐴝𐴊𐴞 𐴓𐴝𐴒𐴞𐴔", "A"),
-    Dialogue("How far is the city?", "𐴑𐴝𐴔𐴝 𐴑𐴡𐴔 𐴊𐴟𐴙?", "B", "https://example.com/travel2.mp3"),
-    Dialogue("It is ten miles away.", "𐴊𐴡𐴙 𐴔𐴞𐴙𐴓 𐴊𐴟𐴙", "A"),
-    Dialogue("Stop here, please.", "𐴀𐴞𐴙 𐴇𐴝𐴔 𐴊𐴞𐴕", "B", "https://example.com/travel3.mp3"),
-    Dialogue("Is this the right way?", "𐴀𐴞𐴁𐴝 𐴇𐴞𐴊𐴝 𐴑𐴝𐴔 𐴑𐴞?", "A"),
-    Dialogue("Yes, keep going.", "𐴇𐴡𐴙, 𐴎𐴝𐴙 𐴓𐴝𐴒𐴞", "B", "https://example.com/travel4.mp3")
-)
+val mockEmergency = emptyList<Dialogue>()
+val mockHomeItems = emptyList<Dialogue>()
+val mockEmotions = emptyList<Dialogue>()
+val mockTech = emptyList<Dialogue>()
+val mockAnimals = emptyList<Dialogue>()
+val mockColors = emptyList<Dialogue>()
+val mockNumbers = emptyList<Dialogue>()
+val mockCulture = emptyList<Dialogue>()

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zubtech.rohingyashikho.data.audio.AudioPlayer
 import com.zubtech.rohingyashikho.data.audio.AudioRecorder
+import com.zubtech.rohingyashikho.data.audio.TtsManager
 import com.zubtech.rohingyashikho.data.local.dao.ProgressDao
 import com.zubtech.rohingyashikho.data.local.entity.ProgressEntity
 import com.zubtech.rohingyashikho.domain.model.Lesson
@@ -23,7 +24,6 @@ data class LessonUiState(
     val isLoading: Boolean = true,
     val isCompleted: Boolean = false,
     val isRecording: Boolean = false,
-
     val recordedFile: File? = null
 ) {
     val currentItem: LessonItem? get() = lesson?.items?.getOrNull(currentItemIndex)
@@ -36,6 +36,7 @@ class LessonViewModel @Inject constructor(
     private val updateReviewItemUseCase: UpdateReviewItemUseCase,
     private val audioPlayer: AudioPlayer,
     private val audioRecorder: AudioRecorder,
+    private val ttsManager: TtsManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -58,7 +59,21 @@ class LessonViewModel @Inject constructor(
 
     fun playAudio() {
         uiState.value.currentItem?.let { item ->
-            audioPlayer.playAsset(item.audioFileRef)
+            if (item.audioFileRef.isNotEmpty()) {
+                audioPlayer.playAsset(item.audioFileRef)
+            } else {
+                viewModelScope.launch {
+                    ttsManager.speak(item.englishMeaning)
+                }
+            }
+        }
+    }
+
+    fun speakEnglish() {
+        uiState.value.currentItem?.let { item ->
+            viewModelScope.launch {
+                ttsManager.speak(item.englishMeaning)
+            }
         }
     }
 
@@ -73,13 +88,6 @@ class LessonViewModel @Inject constructor(
         _uiState.update { it.copy(isRecording = false) }
     }
 
-    fun playRecording() {
-        uiState.value.recordedFile?.let { file ->
-            // In a real app, play the file URI
-            // audioPlayer.playFile(file)
-        }
-    }
-
     fun moveToNextItem() {
         val currentState = _uiState.value
         val nextIndex = currentState.currentItemIndex + 1
@@ -87,7 +95,6 @@ class LessonViewModel @Inject constructor(
 
         viewModelScope.launch {
             currentState.currentItem?.let { item ->
-                // Update progress for the current item before moving on
                 progressDao.updateProgress(
                     ProgressEntity(
                         lessonItemId = item.id,
@@ -95,7 +102,6 @@ class LessonViewModel @Inject constructor(
                         lastAccessed = System.currentTimeMillis()
                     )
                 )
-                // Initialize SR with SM-2 (quality 5 assumed for lesson view)
                 updateReviewItemUseCase(item.id, 5, null)
             }
 
@@ -105,5 +111,11 @@ class LessonViewModel @Inject constructor(
                 _uiState.update { it.copy(isCompleted = true) }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioPlayer.stop()
+        ttsManager.stop()
     }
 }

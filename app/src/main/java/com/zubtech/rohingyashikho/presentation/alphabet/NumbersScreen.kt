@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zubtech.rohingyashikho.domain.model.LessonItem
+import com.zubtech.rohingyashikho.presentation.ui.components.GrammarPulseIndicator
 import com.zubtech.rohingyashikho.presentation.ui.components.QuizVictoryDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -133,6 +135,9 @@ fun NumbersScreen(
                             playAudio = { viewModel.playAudio(it) }
                         )
                     } else {
+                        val playingItemId by viewModel.playingItemId.collectAsState()
+                        val isAudioPlaying by viewModel.isAudioPlaying.collectAsState()
+
                         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(4),
@@ -143,9 +148,11 @@ fun NumbersScreen(
                             ) {
                                 itemsIndexed(displayNumbers) { index, item ->
                                     val countKey = if (selectedMode == "Recognition") "rev_number_${item.id}" else item.id
+                                    val isItemPlaying = isAudioPlaying && playingItemId == item.id
                                     AnimatedNumberItem(
                                         item = item,
                                         index = index,
+                                        isPlaying = isItemPlaying,
                                         clickCount = clickCounts[countKey] ?: 0,
                                         onClick = {
                                             viewModel.playAudio(item)
@@ -558,6 +565,7 @@ fun RowScope.NumberModeTab(label: String, isSelected: Boolean, onClick: () -> Un
 fun AnimatedNumberItem(
     item: LessonItem,
     index: Int,
+    isPlaying: Boolean,
     clickCount: Int,
     onClick: () -> Unit
 ) {
@@ -567,7 +575,7 @@ fun AnimatedNumberItem(
         enter = fadeIn(tween(350, (index % 12) * 40)) + 
                 scaleIn(tween(350, (index % 12) * 40), initialScale = 0.82f)
     ) {
-        NumberDisplayItem(item, index, clickCount, onClick)
+        NumberDisplayItem(item, index, isPlaying, clickCount, onClick)
     }
 }
 
@@ -575,6 +583,7 @@ fun AnimatedNumberItem(
 fun NumberDisplayItem(
     item: LessonItem,
     index: Int,
+    isPlaying: Boolean,
     clickCount: Int,
     onClick: () -> Unit
 ) {
@@ -584,13 +593,13 @@ fun NumberDisplayItem(
     val isPressed by interactionSource.collectIsPressedAsState()
     
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.90f else 1f, 
+        targetValue = if (isPressed || isPlaying) 0.90f else 1f, 
         animationSpec = spring(dampingRatio = 0.7f, stiffness = Spring.StiffnessMedium),
         label = "scale"
     )
 
     val volumeScale by animateFloatAsState(
-        targetValue = if (isPressed) 1.2f else 1f,
+        targetValue = if (isPressed || isPlaying) 1.2f else 1f,
         animationSpec = spring(dampingRatio = 0.5f, stiffness = Spring.StiffnessLow),
         label = "volumeScale"
     )
@@ -603,16 +612,30 @@ fun NumberDisplayItem(
                 scaleX = scale
                 scaleY = scale
             }
+            .shadow(
+                elevation = if (isPlaying) 16.dp else 4.dp,
+                shape = RoundedCornerShape(24.dp),
+                spotColor = accentColor.copy(alpha = if (isPlaying) 0.5f else 0.3f)
+            )
+            .border(
+                width = if (isPlaying) 2.dp else 0.dp,
+                color = if (isPlaying) accentColor else Color.Transparent,
+                shape = RoundedCornerShape(24.dp)
+            )
             .clickable(
                 interactionSource = interactionSource, 
                 indication = null
             ) { onClick() },
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = if (isPlaying) accentColor.copy(alpha = 0.05f) else Color.White
+        )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            if (isPlaying) {
+                GrammarPulseIndicator(color = accentColor, modifier = Modifier.fillMaxSize())
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -626,7 +649,7 @@ fun NumberDisplayItem(
 
             // Volume Icon moved to Top Right corner with animation (TopStart in RTL layout)
             Icon(
-                Icons.AutoMirrored.Rounded.VolumeUp,
+                if (isPlaying) Icons.Rounded.MusicNote else Icons.AutoMirrored.Rounded.VolumeUp,
                 null,
                 modifier = Modifier
                     .align(Alignment.TopStart)
@@ -636,7 +659,7 @@ fun NumberDisplayItem(
                         scaleX = volumeScale
                         scaleY = volumeScale
                     },
-                tint = accentColor.copy(alpha = 0.6f)
+                tint = if (isPlaying) accentColor else accentColor.copy(alpha = 0.6f)
             )
 
             Text(
@@ -644,7 +667,7 @@ fun NumberDisplayItem(
                 modifier = Modifier.align(Alignment.TopEnd).padding(8.dp), // Top Left in RTL
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Black,
-                color = Color(0xFFCBD5E1)
+                color = if (isPlaying) accentColor.copy(alpha = 0.4f) else Color(0xFFCBD5E1)
             )
 
             if (clickCount > 0) {
@@ -677,7 +700,7 @@ fun NumberDisplayItem(
                     text = item.scriptText,
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A),
+                    color = if (isPlaying) accentColor else Color(0xFF0F172A),
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(4.dp))

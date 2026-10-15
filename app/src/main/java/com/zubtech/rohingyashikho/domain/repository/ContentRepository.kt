@@ -15,8 +15,16 @@ interface ContentRepository {
     fun getVowels(): Flow<List<LessonItem>>
     fun getNumbers(): Flow<List<LessonItem>>
     fun getConsonantsForWriting(): Flow<List<LessonItem>>
+    fun getCombinations(): Flow<List<CombinationAudio>>
     
     // App Update & Notifications
     fun getAppUpdateInfo(): Flow<AppUpdateInfo>
     suspend fun updateAppInfo(info: AppUpdateInfo)
 }
+
+data class CombinationAudio(
+    val consonantId: String,
+    val vowelId: String,
+    val combinedText: String,
+    val audioUrl: String
+)

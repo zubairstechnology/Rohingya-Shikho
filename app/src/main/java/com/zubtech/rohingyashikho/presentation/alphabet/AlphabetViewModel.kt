@@ -3,10 +3,12 @@ package com.zubtech.rohingyashikho.presentation.alphabet
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zubtech.rohingyashikho.data.audio.AudioPlayer
+import com.zubtech.rohingyashikho.data.audio.TtsManager
 import com.zubtech.rohingyashikho.data.local.dao.ProgressDao
 import com.zubtech.rohingyashikho.data.local.entity.ProgressEntity
 import com.zubtech.rohingyashikho.data.local.entity.UserStatsEntity
 import com.zubtech.rohingyashikho.domain.model.LessonItem
+import com.zubtech.rohingyashikho.domain.repository.CombinationAudio
 import com.zubtech.rohingyashikho.domain.repository.ContentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -17,7 +19,8 @@ import javax.inject.Inject
 class AlphabetViewModel @Inject constructor(
     private val contentRepository: ContentRepository,
     private val progressDao: ProgressDao,
-    private val audioPlayer: AudioPlayer
+    private val audioPlayer: AudioPlayer,
+    private val ttsManager: TtsManager
 ) : ViewModel() {
 
     val alphabetItems: StateFlow<List<LessonItem>> = contentRepository.getCourse()
@@ -44,6 +47,9 @@ class AlphabetViewModel @Inject constructor(
     val numbers: StateFlow<List<LessonItem>> = contentRepository.getNumbers()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val combinations: StateFlow<List<CombinationAudio>> = contentRepository.getCombinations()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val allProgress: StateFlow<List<ProgressEntity>> = progressDao.getAllProgress()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -61,6 +67,32 @@ class AlphabetViewModel @Inject constructor(
             _playingItemId.value = item.id
             audioPlayer.playAsset(item.audioFileRef)
         }
+    }
+
+    fun playAudioFile(fileName: String) {
+        if (fileName.isNotEmpty()) {
+            audioPlayer.playAsset(fileName)
+        }
+    }
+
+    fun playCombinationAudio(consonant: LessonItem, vowel: LessonItem) {
+        val combinationId = "${consonant.id}_${vowel.id}"
+        _playingItemId.value = combinationId
+        
+        val combination = combinations.value.find { 
+            it.consonantId == consonant.id && it.vowelId == vowel.id 
+        }
+
+        if (combination != null && combination.audioUrl.isNotEmpty()) {
+            audioPlayer.playAsset(combination.audioUrl)
+        } else {
+            // Fallback: Just play the consonant audio if combination is not found
+            playAudio(consonant)
+        }
+    }
+
+    fun speakEnglish(text: String) {
+        ttsManager.speak(text)
     }
 
     fun recordClick(itemId: String) {
@@ -284,7 +316,11 @@ class AlphabetViewModel @Inject constructor(
     }
     
     fun playAlphabetSong() {
-        // Placeholder for alphabet song if available
-        // audioPlayer.playAsset("audio/alphabet_song.mp3")
+        // Placeholder for alphabet song
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        ttsManager.stop()
     }
 }

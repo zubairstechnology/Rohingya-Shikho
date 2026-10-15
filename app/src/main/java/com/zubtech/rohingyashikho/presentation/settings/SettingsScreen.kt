@@ -1,31 +1,32 @@
 package com.zubtech.rohingyashikho.presentation.settings
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.rounded.AdminPanelSettings
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.zubtech.rohingyashikho.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,343 +35,423 @@ fun SettingsScreen(
     onNavigateToAdmin: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    val userName by viewModel.userName.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState()
     val appLanguage by viewModel.appLanguage.collectAsState()
     val isAdmin by viewModel.isAdmin.collectAsState()
-    
-    var showThemeDialog by remember { mutableStateOf(false) }
-    var showLanguageDialog by remember { mutableStateOf(false) }
 
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-            MaterialTheme.colorScheme.background
-        )
-    )
+    val scrollState = rememberScrollState()
 
     Scaffold(
+        containerColor = Color(0xFFF8FAFC),
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = LanguageStrings.getText("settings_title", appLanguage),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                    )
-                },
+            TopAppBar(
+                title = { Text("Profile & Settings", fontWeight = FontWeight.Black, color = Color(0xFF1E293B)) },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onNavigateBack,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                                shape = CircleShape
-                            )
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = LanguageStrings.getText("back", appLanguage),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF1E293B))
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
-                )
+                actions = {
+                    if (isAdmin) {
+                        IconButton(onClick = onNavigateToAdmin) {
+                            Icon(Icons.Default.AdminPanelSettings, contentDescription = "Admin", tint = Color(0xFF6366F1))
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+        }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(gradientBrush)
                 .padding(padding)
+                .verticalScroll(scrollState)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.White, Color(0xFFF1F5F9))
+                    )
+                )
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                // Header Profile Card
-                ProfileSettingsHeader()
+            // Creative Profile Section
+            ProfileHeader(
+                name = userName ?: "Zubair Nsk",
+                onEditClick = { /* Handle edit profile */ }
+            )
 
-                // Settings Section - General Settings
-                SettingsSectionTitle(title = LanguageStrings.getText("app_customization", appLanguage))
+            // Dynamic Stats Section
+            StatsRow()
 
-                SettingsCardItem(
-                    icon = when (themeMode) {
-                        "dark" -> Icons.Default.DarkMode
-                        "light" -> Icons.Default.LightMode
-                        else -> Icons.Default.SettingsSuggest
-                    },
-                    iconBgColor = Color(0xFF6366F1),
-                    title = LanguageStrings.getText("theme_mode", appLanguage),
-                    summary = when (themeMode) {
-                        "dark" -> LanguageStrings.getText("dark_mode", appLanguage)
-                        "light" -> LanguageStrings.getText("light_mode", appLanguage)
-                        else -> LanguageStrings.getText("system_default", appLanguage)
-                    },
-                    onClick = { showThemeDialog = true }
-                )
+            Spacer(modifier = Modifier.height(24.dp))
 
-                SettingsCardItem(
-                    icon = Icons.Default.Language,
-                    iconBgColor = Color(0xFF00ACC1),
-                    title = LanguageStrings.getText("language_selection", appLanguage),
-                    summary = if (appLanguage == "rhg") LanguageStrings.getText("rohingya_hanifi", appLanguage) else LanguageStrings.getText("english", appLanguage),
-                    onClick = { showLanguageDialog = true }
-                )
+            // Main Settings Content
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                
+                // Weekly Learning Goal Card
+                WeeklyProgressCard()
 
-                // Settings Section - Additional Settings
-                SettingsSectionTitle(title = LanguageStrings.getText("preferences", appLanguage))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                SettingsCardItem(
-                    icon = Icons.Default.Speed,
-                    iconBgColor = Color(0xFFEC4899),
-                    title = LanguageStrings.getText("audio_speed", appLanguage),
-                    summary = "Normal",
-                    onClick = { /* Future Implementation */ }
-                )
+                // Settings Groups
+                SettingsGroup(title = "App Customization") {
+                    SettingsItem(
+                        icon = Icons.Default.Palette,
+                        iconBg = Color(0xFFEEF2FF),
+                        iconTint = Color(0xFF6366F1),
+                        title = "Appearance",
+                        subtitle = if (themeMode == "dark") "Dark Mode" else "Light Mode",
+                        onClick = { viewModel.setThemeMode(if (themeMode == "dark") "light" else "dark") }
+                    )
+                    SettingsItem(
+                        icon = Icons.Default.Translate,
+                        iconBg = Color(0xFFDBEAFE),
+                        iconTint = Color(0xFF3B82F6),
+                        title = "App Language",
+                        subtitle = if (appLanguage == "en") "English (United Kingdom)" else "Rohingya (Hanifi)",
+                        onClick = { /* Navigate to Language selection */ }
+                    )
+                    SettingsItem(
+                        icon = Icons.AutoMirrored.Filled.VolumeUp,
+                        iconBg = Color(0xFFD1FAE5),
+                        iconTint = Color(0xFF10B981),
+                        title = "Voice & Audio",
+                        subtitle = "Native Pronunciation • High Quality",
+                        onClick = { }
+                    )
+                }
 
-                SettingsCardItem(
-                    icon = Icons.Default.Notifications,
-                    iconBgColor = Color(0xFFA855F7),
-                    title = LanguageStrings.getText("daily_reminders", appLanguage),
-                    summary = "On - 8:00 PM",
-                    onClick = { /* Future Implementation */ }
-                )
+                SettingsGroup(title = "Learning & Content") {
+                    SettingsItem(
+                        icon = Icons.Default.CloudDownload,
+                        iconBg = Color(0xFFFEF3C7),
+                        iconTint = Color(0xFFD97706),
+                        title = "Offline Lessons",
+                        subtitle = "14 lessons downloaded (120MB)",
+                        onClick = { }
+                    )
+                    SettingsItem(
+                        icon = Icons.Default.NotificationsActive,
+                        iconBg = Color(0xFFFFEDD5),
+                        iconTint = Color(0xFFF59E0B),
+                        title = "Daily Reminders",
+                        hasSwitch = true,
+                        switchChecked = true
+                    )
+                }
 
-                if (isAdmin) {
-                    SettingsCardItem(
-                        icon = Icons.Rounded.AdminPanelSettings,
-                        iconBgColor = Color(0xFFEF4444),
-                        title = LanguageStrings.getText("admin_control_panel", appLanguage),
-                        summary = LanguageStrings.getText("admin_panel_summary", appLanguage),
-                        onClick = onNavigateToAdmin
+                SettingsGroup(title = "Support & Legal") {
+                    SettingsItem(
+                        icon = Icons.AutoMirrored.Filled.Help,
+                        iconBg = Color(0xFFF1F5F9),
+                        iconTint = Color(0xFF64748B),
+                        title = "Help Center",
+                        onClick = { }
+                    )
+                    SettingsItem(
+                        icon = Icons.Default.Security,
+                        iconBg = Color(0xFFF1F5F9),
+                        iconTint = Color(0xFF64748B),
+                        title = "Privacy Policy",
+                        onClick = { }
+                    )
+                    SettingsItem(
+                        icon = Icons.Default.Info,
+                        iconBg = Color(0xFFF1F5F9),
+                        iconTint = Color(0xFF64748B),
+                        title = "About Rohingya Shikho",
+                        subtitle = "Version 1.1.2 • Build 2024",
+                        onClick = { }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // App version info
-                Text(
-                    text = "Rohingya Shikho v1.1.0\nBeautiful & Powerful Learning Settings",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                        textAlign = TextAlign.Center,
-                        lineHeight = 18.sp
+                // Logout Button
+                Button(
+                    onClick = { /* Handle sign out */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFEE2E2),
+                        contentColor = Color(0xFFEF4444)
                     ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    elevation = null
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sign Out", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+
+                Spacer(modifier = Modifier.height(48.dp))
             }
         }
-    }
-
-    // Dynamic Theme Selector Dialog
-    if (showThemeDialog) {
-        AlertDialog(
-            onDismissRequest = { showThemeDialog = false },
-            title = { Text(LanguageStrings.getText("choose_theme", appLanguage)) },
-            text = {
-                Column {
-                    listOf(
-                        "light" to LanguageStrings.getText("light_mode", appLanguage),
-                        "dark" to LanguageStrings.getText("dark_mode", appLanguage),
-                        "system" to LanguageStrings.getText("system_default", appLanguage)
-                    ).forEach { (mode, label) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setThemeMode(mode)
-                                    showThemeDialog = false
-                                }
-                                .padding(vertical = 12.dp, horizontal = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(selected = themeMode == mode, onClick = {
-                                viewModel.setThemeMode(mode)
-                                showThemeDialog = false
-                            })
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = label, style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showThemeDialog = false }) {
-                    Text(LanguageStrings.getText("cancel", appLanguage))
-                }
-            },
-            shape = RoundedCornerShape(24.dp)
-        )
-    }
-
-    // Dynamic Language Selector Dialog
-    if (showLanguageDialog) {
-        AlertDialog(
-            onDismissRequest = { showLanguageDialog = false },
-            title = { Text(LanguageStrings.getText("select_language", appLanguage)) },
-            text = {
-                Column {
-                    listOf(
-                        "en" to LanguageStrings.getText("english", appLanguage),
-                        "rhg" to LanguageStrings.getText("rohingya_hanifi", appLanguage)
-                    ).forEach { (lang, label) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setLanguage(lang)
-                                    showLanguageDialog = false
-                                }
-                                .padding(vertical = 12.dp, horizontal = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(selected = appLanguage == lang, onClick = {
-                                viewModel.setLanguage(lang)
-                                showLanguageDialog = false
-                            })
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = label, style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showLanguageDialog = false }) {
-                    Text(LanguageStrings.getText("cancel", appLanguage))
-                }
-            },
-            shape = RoundedCornerShape(24.dp)
-        )
     }
 }
 
 @Composable
-fun ProfileSettingsHeader() {
-    Card(
+fun ProfileHeader(name: String, onEditClick: () -> Unit) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFF6366F1), Color(0xFFEC4899))
-                        ),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+        Box(contentAlignment = Alignment.BottomEnd) {
+            Surface(
+                modifier = Modifier.size(110.dp),
+                shape = CircleShape,
+                border = BorderStroke(4.dp, Color(0xFF6366F1).copy(alpha = 0.1f)),
+                shadowElevation = 8.dp
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile Picture",
-                    tint = Color.White,
-                    modifier = Modifier.size(36.dp)
+                Image(
+                    painter = painterResource(id = R.drawable.name),
+                    contentDescription = "Avatar",
+                    modifier = Modifier.fillMaxSize().clip(CircleShape),
+                    contentScale = ContentScale.Crop
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = "Rohingya Learner",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            
+            Surface(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clickable { onEditClick() },
+                shape = CircleShape,
+                color = Color(0xFF6366F1),
+                tonalElevation = 6.dp
+            ) {
+                Icon(
+                    Icons.Default.CameraAlt,
+                    contentDescription = "Edit Profile",
+                    modifier = Modifier.padding(8.dp),
+                    tint = Color.White
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Achieve your everyday learning goals",
-                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = name,
+            fontSize = 26.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color(0xFF1E293B)
+        )
+        
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 6.dp)
+        ) {
+            Badge(text = "Level 24", containerColor = Color(0xFFEEF2FF), contentColor = Color(0xFF6366F1))
+            Spacer(modifier = Modifier.width(8.dp))
+            Badge(text = "Gold Member", containerColor = Color(0xFFFEF3C7), contentColor = Color(0xFFD97706))
+        }
+    }
+}
+
+@Composable
+fun Badge(text: String, containerColor: Color, contentColor: Color) {
+    Surface(
+        color = containerColor,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = contentColor
+        )
+    }
+}
+
+@Composable
+fun StatsRow() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        StatCard(
+            modifier = Modifier.weight(1f),
+            label = "Streak",
+            value = "12",
+            icon = Icons.Default.LocalFireDepartment,
+            color = Color(0xFFF59E0B)
+        )
+        StatCard(
+            modifier = Modifier.weight(1f),
+            label = "Score",
+            value = "2.4k",
+            icon = Icons.Default.Stars,
+            color = Color(0xFF6366F1)
+        )
+        StatCard(
+            modifier = Modifier.weight(1f),
+            label = "Lessons",
+            value = "84",
+            icon = Icons.Default.MenuBook,
+            color = Color(0xFF10B981)
+        )
+    }
+}
+
+@Composable
+fun StatCard(modifier: Modifier, label: String, value: String, icon: ImageVector, color: Color) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White,
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(icon, null, tint = color, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(value, fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color(0xFF1E293B))
+            Text(label, fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
+@Composable
+fun WeeklyProgressCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B))
+    ) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("Weekly Goal", color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
+                    Text("Keep it up!", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                Icon(
+                    painter = painterResource(id = R.drawable.every_day),
+                    contentDescription = null,
+                    tint = Color(0xFF10B981),
+                    modifier = Modifier.size(40.dp)
                 )
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            LinearProgressIndicator(
+                progress = { 0.72f },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(10.dp)
+                    .clip(CircleShape),
+                color = Color(0xFF6366F1),
+                trackColor = Color.White.copy(alpha = 0.1f)
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("72% completed", color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
+                Text("18 / 25 lessons", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
             }
         }
     }
 }
 
 @Composable
-fun SettingsSectionTitle(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge.copy(
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-            letterSpacing = 1.sp
-        ),
-        modifier = Modifier.padding(start = 4.dp, top = 8.dp)
-    )
+fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF94A3B8),
+            modifier = Modifier.padding(start = 12.dp, bottom = 12.dp)
+        )
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = Color.White,
+            shadowElevation = 0.5.dp
+        ) {
+            Column {
+                content()
+            }
+        }
+    }
 }
 
 @Composable
-fun SettingsCardItem(
+fun SettingsItem(
     icon: ImageVector,
-    iconBgColor: Color,
+    iconBg: Color,
+    iconTint: Color,
     title: String,
-    summary: String,
-    onClick: () -> Unit
+    subtitle: String? = null,
+    onClick: (() -> Unit)? = null,
+    hasSwitch: Boolean = false,
+    switchChecked: Boolean = false,
+    onSwitchChange: (Boolean) -> Unit = {}
 ) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .size(44.dp)
+                .background(iconBg, RoundedCornerShape(14.dp)),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .background(color = iconBgColor.copy(alpha = 0.15f), shape = RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconBgColor,
-                    modifier = Modifier.size(22.dp)
+            Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+        }
+        
+        Spacer(modifier = Modifier.width(16.dp))
+        
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color(0xFF1E293B)
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    fontSize = 13.sp,
+                    color = Color(0xFF64748B),
+                    fontWeight = FontWeight.Medium
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = summary,
-                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-            }
+        }
+        
+        if (hasSwitch) {
+            Switch(
+                checked = switchChecked,
+                onCheckedChange = onSwitchChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = Color(0xFF10B981),
+                    uncheckedTrackColor = Color(0xFFE2E8F0)
+                ),
+                modifier = Modifier.scale(0.85f)
+            )
+        } else if (onClick != null) {
             Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                Icons.Default.ChevronRight,
+                null,
+                tint = Color(0xFFCBD5E1),
+                modifier = Modifier.size(24.dp)
             )
         }
     }

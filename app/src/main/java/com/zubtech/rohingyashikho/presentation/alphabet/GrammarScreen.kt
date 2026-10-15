@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.zubtech.rohingyashikho.presentation.ui.components.GrammarPulseIndicator
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -59,12 +60,13 @@ fun GrammarScreen(
                 nativeName = "𐴏𐴝𐴥𐴑𐴦𐴞𐴕",
                 scriptSign = "𐴢",
                 description = "Marks a consonant vowel-less or silent stop.",
-                nativeDescription = "𐴎𐴠 𐴇𐴡𐴥𐴌𐴗𐴧𐴝𐴃𐴢 𐴀𐴝𐴉𐴡𐴌 ، 𐴀𐴞𐴉𐴡𐴌 ، 𐴀𐴟𐴉𐴡𐴌 ، 𐴀𐴠𐴉𐴡𐴌 𐴀𐴝𐴌 𐴀𐴡𐴉𐴡𐴌 𐴕𐴡 𐴀𐴝𐴘𐴁𐴡𐴤 𐴇𐴥𐴁𐴝 𐴏𐴝𐴥𐴑𐴦𐴞𐴕 𐴀𐴡𐴘. 𐴌𐴟𐴇𐴝𐴥𐴚𐴒𐴙𐴝 𐴎𐴟𐴁𐴝𐴕𐴡𐴃𐴢 𐴀𐴠𐴑𐴧𐴟 𐴓𐴝𐴃𐴧𐴝𐴃𐴥𐴢 𐴏𐴝𐴥𐴑𐴦𐴞𐴕 𐴈𐴡𐴀𐴒𐴧𐴗𐴝𐴤 𐴀𐴡𐴥𐴘 𐴉𐴝𐴌.",
-                example = "𐴊𐴡𐴜𐴕𐴢",
+                nativeDescription ="𐴎𐴠 𐴇𐴡𐴥𐴌𐴡𐴉𐴗𐴧𐴝𐴃𐴢 𐴀𐴝𐴉𐴡𐴌 ، 𐴀𐴞𐴉𐴡𐴌 ، 𐴀𐴟𐴉𐴡𐴌 ، 𐴀𐴠𐴉𐴡𐴌 𐴀𐴝𐴌 𐴀𐴡𐴉𐴡𐴌 𐴕𐴡 𐴀𐴝𐴘𐴁𐴡𐴤 𐴇𐴞𐴥𐴁𐴝 𐴏𐴝𐴥𐴑𐴦𐴞𐴕 𐴀𐴡𐴘𐴁𐴡. 𐴌𐴟𐴇𐴝𐴥𐴚𐴒𐴙𐴝 𐴎𐴟𐴁𐴝𐴕𐴡𐴃𐴢 𐴀𐴠𐴑𐴧𐴟 𐴓𐴝𐴃𐴧𐴝𐴃𐴥𐴢 𐴏𐴝𐴥𐴑𐴦𐴞𐴕 𐴈𐴡𐴀𐴟𐴒𐴧𐴗𐴝𐴤 𐴀𐴡𐴥𐴘 𐴉𐴝𐴌𐴠",
+
+        example = "𐴊𐴡𐴜𐴕𐴢",
                 exampleEnglish = "Don (Silent Stop)",
                 accentColor = Color(0xFF0F766E),
-                nativeAudioFile = "sakin_native.mp3",
-                nativeWordTimings = listOf(0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500),
+                nativeAudioFile = "https://drive.google.com/file/d/1n65WiH8mZN-T9xrtuSj-K7qmbcV5VeX-/view?usp=drivesdk",
+                nativeWordTimings = emptyList(),
                 englishAudioFile = "sakin_english.mp3",
                 englishWordTimings = listOf(0, 400, 800, 1200, 1600, 2000, 2400, 2800),
                 examples = listOf(
@@ -85,7 +87,7 @@ fun GrammarScreen(
                 nativeName = "𐴕𐴝𐴈𐴡𐴕𐴧𐴝",
                 scriptSign = "𐴣",
                 description = "Adds nasalization accent/sound to the vowels.",
-                nativeDescription = "𐴕𐴝𐴈𐴡𐴕𐴧𐴝 𐴀𐴠𐴀𐴕 𐴀𐴟𐴒𐴧𐴗𐴤𐴝 𐴀𐴝𐴁𐴝𐴏𐴡𐴌𐴠𐴥 𐴈𐴡𐴀 𐴎𐴞𐴁𐴝𐴥 𐴒𐴝𐴓𐴡𐴌 𐴀𐴝𐴁𐴝𐴏𐴡𐴌 𐴉𐴟𐴥𐴖𐴝𐴣𐴃𞴞 𐴕𐴝𐴈𐴡𐴃𐴧𐴟𐴥 𐴕𞴞𞴘𞴡𞴓",
+                nativeDescription = "𐴕𐴝𐴈𐴡𐴕𐴧𐴝 𐴀𐴠𐴀𐴕 𐴀𐴟𐴒𐴧𐴗𐴤𐴝 𐴀𐴝𐴁𐴝𐴏𐴡𐴌𐴥 𐴈𐴡𐴀 𐴎𐴞𐴁𐴝𐴥 𐴒𐴝𐴓𐴡𐴌 𐴀𐴝𐴁𐴝𐴏𐴡𐴌 𐴉𐴟𐴥𐴖𐴝𐴣𐴃𞴞 𐴕𐴝𐴈𐴡𐴃𐴧𐴟𐴥 𐴕𞴞𞴘𞴡𞴓",
                 example = "𐴌𐴡𐴜𐴕𐴣𐴔𐴢",
                 exampleEnglish = "Rom (Nasalized)",
                 accentColor = Color(0xFF0D9488),
@@ -109,7 +111,7 @@ fun GrammarScreen(
                 nativeName = "𐴇𐴝𐴥𐴌 𐴁𐴝𐴤𐴘",
                 scriptSign = "𐴤",
                 description = "Marks a consonant soft sound stop.",
-                nativeDescription = "𐴇𐴝𐴥𐴌𐴁𐴝𐴤𐴘 𐴈𐴡𐴀𐴠 𐴀𐴠𐴀𐴕 𐴀𐴟𐴒𐴗𐴧𐴝𐴤 𐴎𐴟𐴌 𐴈𐴡𐴔 𐴀𐴡𐴦𐴓𐴝 𐴀𐴝𐴁𐴝𐴏𐴌𞴠𞴥 𞴎𞴞𞴁𞴝𐴤 𞴒𐴝𐴓𐴡𐴃𐴧𐴟𞴥 𞴕𞴞𞴘𞴡𞴙𞴓𞴃𞴠 𞴎𞴟𞴌 𞴈𞴡𞴔 𞴀𞴡𐴥𞴕𞴦𐴡 𞴎𞴡𐴌𞴘𞴝 𞴀𞴠𞴑𞴧𞴠𞴕𞴝 𞴇𐴝𐴥𐴌 𐴀𐴝𐴁𐴝𐴏 𐴀𐴝𐴘𞴧𞴠𞴥 郁𞴝𞴕 𞴓𞴝𞴒𞴠.",
+                nativeDescription = "𐴇𐴝𐴥𐴌𐴁𐴝𐴤𐴘 𐴈𐴡𐴀𐴠 𐴀𐴠𐴀𐴕 𐴀𐴟𐴒𐴗𐴧𐴝𐴤 𐴎𐴟𐴌 𐴈𐴡𐴔 𐴀𐴡𐴦𐴓𐴝 𐴀𐴝𐴁𐴝𐴏𐴌𞴠𞴥 𞴎𞴞𞴁𞴝𐴤 𞴒𞴝𐴓𐴡𐴃𐴧𐴟u2005 𞴕𞴞𞴘𞴡𞴙𞴓𞴃𞴠 𞴎𞴟𞴌 𞴡𞴔 𞴥𞴕𞴦𞴡 𞴌𞴘𞴝 𞴠𞴑𞴧𞴠𞴕𞴝 𐴝𐴥𐴌 𐴀𐴝𐴁𐴝𐴏 𐴀𐴝𐴘𞴧𞴠𞴥 郁𞴝𞴕 𞴝𞴒𞴠.",
                 example = "𐴁𐴝𐴤𐴌𐴡",
                 exampleEnglish = "Baro (Soft Stop)",
                 accentColor = Color(0xFF8B5CF6),
@@ -133,7 +135,7 @@ fun GrammarScreen(
                 nativeName = "𐴃𐴠𐴓𐴝",
                 scriptSign = "𐴥",
                 description = "Represents low-falling tone marker.",
-                nativeDescription = "𐴃𐴠𐴓𐴝 𐴎𞴞𞴁𞴝𐴥𞴘𞴠 𞴀𞴝𞴁𐴝𐴏𐴡𐴌 𞴓𞴝𞴔𞴝𞴘𞴠 𞴏𞴞𞴕𞴢 𞴒𐴡𐴌𞴠𞴥𞴿",
+                nativeDescription = "𐴃𐴠𐴓𐴝 𞴞𞴁𞴝𐴥𞴘𞴠 𞴝𞴁𐴝𐴏𐴡𐴌 𞴝𞴔𞴝𞴘𞴠 𞴞𞴕𞴢 𐴡𐴌𞴠𞴥𞴿",
                 example = "𐴁𐴝𐴤𐴌𐴡",
                 exampleEnglish = "Baro (Low Tone)",
                 accentColor = Color(0xFFEC4899),
@@ -147,7 +149,7 @@ fun GrammarScreen(
                     GrammarExample("Do (Low)", "𐴑𐴝\u200C𐴥𐴌𐴡"),
                     GrammarExample("Lose (Low)", "𐴇𐴝\u200C𐴥𐴌𐴡"),
                     GrammarExample("Read (Low)", "𐴉𐴝\u200C𐴥𐴌𐴡"),
-                    GrammarExample("Fight (Low)", "𐴓𐴝\u200C𐴥𐴌𐴡"),
+                    GrammarExample("Fight (Low)", "𐴓𐴝\u200C𐴥𐴌𞴡"),
                     GrammarExample("Current (Low)", "𐴎𐴝\u200C𐴥𐴌𐴡"),
                     GrammarExample("Door (Low)", "𐴊𐴝\u200C𐴥𐴌𐴡")
                 )
@@ -157,7 +159,7 @@ fun GrammarScreen(
                 nativeName = "𐴃𐴝𐴕𐴝",
                 scriptSign = "𐴦",
                 description = "Represents high-rising long vowel tone marker.",
-                nativeDescription = "𐴃𐴝𐴕𐴝 𐴎𞴞𞴁𞴝𐴥𞴘𞴠 𞴀𞴝𞴁𐴝𐴏𐴡𐴌 𞴟𞴌𞴠𞴥 𞴃𞴝𞴕𞴞𞴘𞴝 𞴏𞴞𞴕𞴢 𞴡𐴌𞴠𞴥𞴿",
+                nativeDescription = "𐴃𐴝𐴕𐴝 𞴞𞴁𞴝𐴥𞴘𞴠 𞴝𞴁𐴝𐴏𐴡𐴌 𞴟𞴌𞴠𞴥 𞴃𞴝𞴕𞴞𞴘𞴝 𞴞𞴕𞴢 𞴌𞴠𞴥𞴿",
                 example = "𐴔𐴝𐴥𐴌𐴡",
                 exampleEnglish = "Maro (High Tone)",
                 accentColor = Color(0xFFF59E0B),
@@ -171,7 +173,7 @@ fun GrammarScreen(
                     GrammarExample("Do (High)", "𐴑𐴝\u200C𐴦𐴌𐴡"),
                     GrammarExample("Lose (High)", "𐴇𐴝\u200C𐴦𐴌𐴡"),
                     GrammarExample("Read (High)", "𐴉𐴝\u200C𐴦𐴌𐴡"),
-                    GrammarExample("Fight (High)", "𐴓𐴝\u200C𐴦𐴌𐴡"),
+                    GrammarExample("Fight (High)", "𐴓𐴝\u200C𐴦𐴌𞴡"),
                     GrammarExample("Current (High)", "𐴎𐴝\u200C𐴦𐴌𐴡"),
                     GrammarExample("Door (High)", "𐴊𐴝\u200C𐴦𐴌𐴡")
                 )
@@ -181,7 +183,7 @@ fun GrammarScreen(
                 nativeName = "𐴃𐴡𐴏𐴧𞴞",
                 scriptSign = "𐴧",
                 description = "Gemination sign used to double the consonant sound.",
-                nativeDescription = "𐴃𐴡𐴏𐴧𞴞 𐴎𞴞𞴁\u200C𞴝𞴥𞴘𞴠 𞴇𞴝\u200C𞴌𞴉𐴡\u200C𞴌 𞴀\u200C𞴝u200C𞴁\u200C𞴝u200C𞴏𞴡u200C𞴌u200C𞴠 𞴊𞴟u200C𞴁𞴡u200C𞴌𞴝 𞴡\u200C𞴌𞴞𞴥 𞴇𞴡𞴘𞴝 𞴎𞴝𞴘𞴠𞴿",
+                nativeDescription = "𐴃𐴡𐴏𐴧𞴞 𞴞𞴁\u200C𞴝𞴥𞴘𞴠 𞴝\u200C𞴌𞴉𐴡\u200C𞴌 \u200C𞴝u200C𞴁\u200C𞴝u200C𞴏𞴡u200C𞴌u200C𞴠 𞴟u200C𞴁𞴡u200C𞴝 𞴡\u200C𞴌𞴞𞴥 𐴡𞴘𞴝 𞴝𞴘𞴠𞴿",
                 example = "𐴄𐴝𐴦𐴌𐴡",
                 exampleEnglish = "Darro (Double Sound)",
                 accentColor = Color(0xFF3B82F6),
@@ -210,7 +212,7 @@ fun GrammarScreen(
                 nativeName = "𐴃𐴝𐴕𐴝 𐴃𐴠𐴓𐴝 (𐴤𐴥)",
                 scriptSign = "◌𐴤𐴥",
                 description = "Complex combining tone markers for inflection.",
-                nativeDescription = "𐴏𐴟𐴌𐴡𐴌 𐴓𐴝𐴔𐴝𐴘𞴝 𞴀𞴝 𞴟𞴌𞴠𞴥 𞴃𞴝𞴕𞴞𞴘𞴝 𞴞𞴓𞴝𞴘𞴝 𞴡𞴘𞴝 𞴎𞴝𞴘𞠠𞴿",
+                nativeDescription = "𐴏𐴟𐴌𐴡𐴌 𐴓𐴝𐴔𐴝𐴘𞴝 𞴝 𞴟𞴌𞴠𞴥 𞴃𞴝𞴕𞴘𞴝 𞴞𞴓𞴝𞴘𞴝 𞴡𞴘𞴝 𞴝𞴘𞠠𞴿",
                 example = "𐴁𐴝𐴤𐴌𐴡𐴥",
                 exampleEnglish = "Baro-Tana (Inflected)",
                 accentColor = Color(0xFF059669),
@@ -221,33 +223,33 @@ fun GrammarScreen(
                 nativeName = "𐴎𐴟𐴔𐴓𐴝 𐴁\u200C𐴡𐴕\u200C𐴝𐴕",
                 scriptSign = "𐴖𐴕",
                 description = "Subject-Object-Verb rule structures in Hanifi script.",
-                nativeDescription = "𐴇𐴝𐴕𞴞𞴉𞴞 𞴓𞴠𞴈𞴝 𞴝𞴎𞴠 𞴡𞴘𞴓𞴝 𞴝𞴀𞴠𞴓𢃢 𞴃𞴝𞴌𞴡𞴌 𞴝𞴟𢃢 𞴝𞴈𞴠𞴌𞴡𞴃𢃢 𞴠𢃢 𞴝𞴘𞴠𞴿",
-                example = "𐴔𐴝\u200C𐴥 𐴁𐴝\u200C𐴤𐴌𐴡 𐴇𐴝\u200C𐴕𢃢",
+                nativeDescription = "𐴇𐴝𐴕𞴉 𞴈𞴝 𞴠 𞴘𞴓𞴝 𞴠𞴓 𞴝𞴌𞴡𞴌 𞴟 𞴈𞠠  ",
+                example = "𐴔𐴝\u200C𐴥 𐴁𐴝\u200C𐴤𐴌𐴡 𐴇𐴝\u200C\u200C𐴕",
                 exampleEnglish = "SOV Order Structure",
                 accentColor = Color(0xFF10B981),
                 examples = listOf(
-                    GrammarExample("I eat rice", "𐴔𐴝\u200C𐴥 𐴁𐴝\u200C𐴤𐴌𐴡 𐴇𐴝\u200C\u200C𐴕𢃢"),
-                    GrammarExample("He goes home", "𐴇𐴞𐴃𐴠 𐴒\u200C𐴡𐴌\u200C𢃢 𐴎𐴝\u200C𐴘𐴠"),
-                    GrammarExample("They play football", "𐴇𐴞𐴃𐴝𐴌𐴝 𐴁\u200C𐴡𐴓𢃢 𐴈𐴠𐴓𐴠"),
-                    GrammarExample("She reads a book", "𐴇𐴞𐴃\u200C𐴞𞴘𞴠 𞴑𞴞𞴃𞴝𞴁𢃢 𞴡𞴌𞠠"),
-                    GrammarExample("We drink water", "𐴔𐴝\u200C\u200C𐴌𐴝 𐴉𐴝𐴕 𞴝𞴘"),
+                    GrammarExample("I eat rice", "𐴔𐴝\u200C𐴥 𐴁𐴝\u200C𐴤𐴌𐴡 𐴇𐴝\u200C\u200C𐴕"),
+                    GrammarExample("He goes home", "𐴇𐴞𐴃𐴠 𐴒\u200C𐴡𐴌\u200C 𐴎𐴝\u200C𐴘𐴠"),
+                    GrammarExample("They play football", "𐴇𐴞𐴃𐴝𐴌𐴝 𐴁\u200C𐴡𐴓 𐴈𐴠𐴓𐴠"),
+                    GrammarExample("She reads a book", "𐴇𐴞𐴃\u200C𐴞  𞠠"),
+                    GrammarExample("We drink water", "𐴔𐴝\u200C\u200C𐴌𐴝 𐴉𐴝𐴕 "),
                     GrammarExample("I see a bird", "𐴔𐴝\u200C\u200C𐴥 𐴉𐴝 "),
-                    GrammarExample("You come here", "𐴃𐴟𐴘 𐴇 𞴝𞴘𞴡"),
-                    GrammarExample("He loves mother", "𐴇 𞴝𞴥 𞴡𞴇𞴡𞴁𞴧𞴡𞴃𢃢 𞴡𞴌"),
+                    GrammarExample("You come here", "𐴃𐴟𐴘 𐴇 "),
+                    GrammarExample("He loves mother", "𐴇   \u200C"),
                     GrammarExample("It is raining", "𐴎𐴡𐴌 𐴇𐴡𐴘 𐴓𐴝\u200C𐴒𐴠"),
-                    GrammarExample("Sun rises", "𐴁𐴠𐴓𢃢 𐴟𐴑𐴠")
+                    GrammarExample("Sun rises", "𐴁𐴠𐴓 𐴟𐴑𐴠")
                 )
             ),
             GrammarModel(
                 name = "Conjunction Flow",
-                nativeName = "𐴓𞴞𞴕𢃢𐴒𐴡𐴌𐴡𐴕𞴞",
+                nativeName = "𐴓",
                 scriptSign = "◌𐴦𐴢",
                 description = "Flow restrictions between high vowels & gemination.",
-                nativeDescription = "𐴀𐴝𐴁𐴝𐴏𐴡𐴌 𐴓𞴞𞴕𢃢 𞴡𐴌𞴡𐴕 𞴝𞴥 𞴡  𢃢 𞴡𞴌𞴥𞴿",
-                example = "𐴄𐴝\u200C𐴦𐴌𐴡𢃢",
+                nativeDescription = "𐴀𐴝𐴁𐴝𐴏𐴡𐴌 𐴓 𐴥    \u200C𐴌𐴥𞴿",
+                example = "𐴄𐴝\u200C𐴦𐴌𐴡",
                 exampleEnglish = "Linked Stem Flow",
                 accentColor = Color(0xFF047857),
-                examples = List(10) { i -> GrammarExample("Flow Case ${i + 1}", "𐴄𐴝\u200C𐴦𐴌𐴡𢃢") }
+                examples = List(10) { i -> GrammarExample("Flow Case ${i + 1}", "𐴄𐴝\u200C𐴦𐴌𐴡") }
             )
         )
     }
@@ -382,7 +384,7 @@ fun GrammarScreen(
                                 label = "grammar_content"
                             ) { item ->
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    // Symbol Box with Outline - Adjusted for screenshot request
+                                    // Symbol Box with Outline
                                     Box(
                                         modifier = Modifier
                                             .size(72.dp)
@@ -486,7 +488,7 @@ fun GrammarScreen(
 
                                             Spacer(modifier = Modifier.height(10.dp))
 
-                                            // English Audio Button below English text
+                                            // English Audio Button
                                             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                                                 val isEnglishPlaying = (playingAudioType == "english" || playingAudioType == "tts") && playingExampleIndex == -1
                                                 IconButton(
@@ -515,7 +517,7 @@ fun GrammarScreen(
                                             
                                             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFFF1F5F9))
                                             
-                                            // Word-by-word Highlighted Native Description with Justify Alignment & RTL
+                                            // Word-by-word Highlighted Native Description
                                             val nativeWords = item.nativeDescription.split(Regex("\\s+"))
                                             val annotatedNative = buildAnnotatedString {
                                                 nativeWords.forEachIndexed { index, word ->
@@ -544,7 +546,7 @@ fun GrammarScreen(
 
                                             Spacer(modifier = Modifier.height(14.dp))
 
-                                            // Native Song icon button below Hanifi script
+                                            // Native Audio button
                                             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
                                                 val isNativePlaying = playingAudioType == "native" && playingExampleIndex == -1
                                                 IconButton(
@@ -558,7 +560,7 @@ fun GrammarScreen(
                                                 ) {
                                                     Icon(
                                                         imageVector = if (isNativePlaying) Icons.Rounded.MusicNote else Icons.AutoMirrored.Rounded.VolumeUp,
-                                                        contentDescription = "Song",
+                                                        contentDescription = "Native Audio",
                                                         tint = if (isNativePlaying) Color.White else item.accentColor,
                                                         modifier = Modifier.size(24.dp)
                                                     )
@@ -569,7 +571,7 @@ fun GrammarScreen(
 
                                     Spacer(modifier = Modifier.height(20.dp))
 
-                                    // ENHANCED: 10 Usage Examples Creative Carousel Design
+                                    // Interactive Examples Carousel
                                     Column(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalAlignment = Alignment.CenterHorizontally
@@ -596,7 +598,7 @@ fun GrammarScreen(
                                                     letterSpacing = 1.2.sp
                                                 )
                                                 Text(
-                                                    text = "Swipe to explore 10 real-world cases",
+                                                    text = "Swipe to explore cases",
                                                     fontSize = 10.sp,
                                                     color = Color(0xFF64748B)
                                                 )
@@ -762,14 +764,13 @@ fun GrammarScreen(
                                             repeat(item.examples.size) { iteration ->
                                                 val isSelected = pagerState.currentPage == iteration
                                                 val width by animateDpAsState(if (isSelected) 28.dp else 10.dp, label = "width")
-                                                val height by animateDpAsState(if (isSelected) 10.dp else 10.dp, label = "height")
                                                 val color = if (isSelected) item.accentColor else item.accentColor.copy(alpha = 0.2f)
                                                 Box(
                                                     modifier = Modifier
                                                         .padding(horizontal = 4.dp)
                                                         .clip(CircleShape)
                                                         .background(color)
-                                                        .size(width = width, height = height)
+                                                        .size(width = width, height = 10.dp)
                                                 )
                                             }
                                         }
@@ -783,29 +784,6 @@ fun GrammarScreen(
             }
         }
     }
-}
-
-@Composable
-fun GrammarPulseIndicator(color: Color, modifier: Modifier = Modifier.size(110.dp)) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f, targetValue = 1.5f,
-        animationSpec = infiniteRepeatable(tween(2200), RepeatMode.Restart), label = "scale"
-    )
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.35f, targetValue = 0f,
-        animationSpec = infiniteRepeatable(tween(2200), RepeatMode.Restart), label = "alpha"
-    )
-
-    Box(
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-                this.alpha = alpha
-            }
-            .background(color.copy(alpha = 0.25f), CircleShape)
-    )
 }
 
 @Composable

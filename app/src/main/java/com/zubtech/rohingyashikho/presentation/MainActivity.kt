@@ -71,11 +71,11 @@ import com.zubtech.rohingyashikho.presentation.onboarding.AgeInputScreen
 import com.zubtech.rohingyashikho.presentation.onboarding.NameInputScreen
 import com.zubtech.rohingyashikho.presentation.onboarding.OnboardingScreen
 import com.zubtech.rohingyashikho.presentation.onboarding.OnboardingViewModel
+import com.zubtech.rohingyashikho.presentation.profile.ProfileScreen
 import com.zubtech.rohingyashikho.presentation.progress.ProgressScreen
 import com.zubtech.rohingyashikho.presentation.quiz.QuizScreen
 import com.zubtech.rohingyashikho.presentation.review.ReviewScreen
 import com.zubtech.rohingyashikho.presentation.settings.LanguageStrings
-import com.zubtech.rohingyashikho.presentation.settings.SettingsScreen
 import com.zubtech.rohingyashikho.presentation.splash.SplashScreen
 import com.zubtech.rohingyashikho.presentation.ui.theme.RohingyaShikhoTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
     lateinit var userPreferences: UserPreferences
 
     private lateinit var appUpdateManager: AppUpdateManager
-    private val updateType = AppUpdateType.FLEXIBLE // Can be IMMEDIATE for forced updates
+    private val updateType = AppUpdateType.FLEXIBLE 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -161,7 +161,6 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode != RESULT_OK) {
-            // If the update is cancelled or fails, you can handle it here
             Toast.makeText(this, "Update failed or cancelled", Toast.LENGTH_SHORT).show()
         }
     }
@@ -312,42 +311,18 @@ fun RohingyaAppNavigation(appLanguage: String) {
                         onNavigateBack = { navController.popBackStack() },
                         onLessonSelected = { lessonId ->
                             when {
-                                lessonId == "1" && levelId == "1" -> {
-                                    navController.navigate(Screen.HanifiIntro.route)
-                                }
-                                lessonId == "2" && levelId == "1" -> {
-                                    navController.navigate(Screen.Consonants.route)
-                                }
-                                lessonId == "3" && levelId == "1" -> {
-                                    navController.navigate(Screen.Vowels.route)
-                                }
-                                lessonId == "4" && levelId == "1" -> {
-                                    navController.navigate(Screen.AlphabetCombination.route)
-                                }
-                                lessonId == "5" && levelId == "1" -> {
-                                    navController.navigate(Screen.Numbers.route)
-                                }
-                                lessonId == "1" && levelId == "2" -> {
-                                    navController.navigate(Screen.WritingPractice.route)
-                                }
-                                lessonId == "2" && levelId == "2" -> {
-                                    navController.navigate(Screen.Grammar.createRoute(levelId))
-                                }
-                                lessonId == "3" && levelId == "2" -> {
-                                    navController.navigate(Screen.WordBuilding.route)
-                                }
-                                lessonId == "1" && levelId == "3" -> {
-                                    navController.navigate(Screen.Grammar.createRoute(levelId))
-                                }
-                                lessonId == "2" && levelId == "3" -> {
-                                    navController.navigate(Screen.AdvancedVocabulary.route)
-                                }
-                                lessonId == "1" && levelId == "4" -> {
-                                    navController.navigate(Screen.AdvancedIntro.route)
-                                }
-                                else -> {
-                                    navController.navigate(Screen.Lesson.createRoute(lessonId))
-                                }
+                                lessonId == "1" && levelId == "1" -> navController.navigate(Screen.HanifiIntro.route)
+                                lessonId == "2" && levelId == "1" -> navController.navigate(Screen.Consonants.route)
+                                lessonId == "3" && levelId == "1" -> navController.navigate(Screen.Vowels.route)
+                                lessonId == "4" && levelId == "1" -> navController.navigate(Screen.AlphabetCombination.route)
+                                lessonId == "5" && levelId == "1" -> navController.navigate(Screen.Numbers.route)
+                                lessonId == "1" && levelId == "2" -> navController.navigate(Screen.WritingPractice.route)
+                                lessonId == "2" && levelId == "2" -> navController.navigate(Screen.Grammar.createRoute(levelId))
+                                lessonId == "3" && levelId == "2" -> navController.navigate(Screen.WordBuilding.route)
+                                lessonId == "1" && levelId == "3" -> navController.navigate(Screen.Grammar.createRoute(levelId))
+                                lessonId == "2" && levelId == "3" -> navController.navigate(Screen.AdvancedVocabulary.route)
+                                lessonId == "1" && levelId == "4" -> navController.navigate(Screen.AdvancedIntro.route)
+                                else -> navController.navigate(Screen.Lesson.createRoute(lessonId))
                             }
                         },
                         onConsonantsClick = {
@@ -520,30 +495,19 @@ fun RohingyaAppNavigation(appLanguage: String) {
                     )
                 }
                 composable(Screen.Progress.route) {
-                    ProgressScreen(
+                    ProfileScreen(
                         onNavigateBack = { navController.popBackStack() },
-                        onLogout = {
-                            navController.navigate(Screen.Splash.route) {
-                                popUpTo(0) { inclusive = true }
+                        onNavigateToAdmin = { navController.navigate(Screen.Admin.route) },
+                        onLogoutSuccess = {
+                            navController.navigate(Screen.NameInput.route) {
+                                popUpTo(0)
                             }
-                        },
-                        onSettingsClick = {
-                            navController.navigate(Screen.Settings.route)
-                        },
-                        onStartReview = {
-                            navController.navigate(Screen.Review.route)
                         }
                     )
                 }
                 composable(Screen.Review.route) {
                     ReviewScreen(
                         onNavigateBack = { navController.popBackStack() }
-                    )
-                }
-                composable(Screen.Settings.route) {
-                    SettingsScreen(
-                        onNavigateBack = { navController.popBackStack() },
-                        onNavigateToAdmin = { navController.navigate(Screen.Admin.route) }
                     )
                 }
             }
